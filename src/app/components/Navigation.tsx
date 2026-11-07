@@ -128,7 +128,7 @@ export function Navigation() {
                   <Link
                     href={link.path}
                     onClick={() => setActiveDropdown(null)}
-                    className={`relative flex min-h-11 items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-2 text-[10px] font-semibold uppercase tracking-[0.025em] transition-colors duration-150 after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-0.5 after:rounded-full after:bg-[var(--cpsar-navy)] after:transition-transform after:duration-200 after:content-[''] xl:px-2 xl:text-[11px] 2xl:px-2.5 2xl:text-xs ${
+                    className={`relative flex min-h-11 items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-2 text-xs font-semibold uppercase tracking-[0.025em] transition-colors duration-150 after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-0.5 after:rounded-full after:bg-[var(--cpsar-navy)] after:transition-transform after:duration-200 after:content-[''] xl:px-2 xl:text-[13px] 2xl:px-2.5 2xl:text-sm ${
                       (pathname === link.path || link.children?.some((child) => child.path === pathname))
                         ? "text-[#14365F] after:scale-x-100"
                         : "text-neutral-700 after:scale-x-0 hover:bg-[#f2f7fa] hover:text-[#173a60] hover:after:scale-x-100"
