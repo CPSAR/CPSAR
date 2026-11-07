@@ -12,6 +12,7 @@ import {
   Twitter,
   Facebook,
   Linkedin,
+  Search,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
@@ -83,7 +84,10 @@ export function Navigation() {
           <p className="text-xs text-white/80">
             Rwanda&apos;s National Clinical Psychology Students Association
           </p>
-          <div className="flex items-center gap-1" role="group" aria-label="CPSAR social media">
+          <div className="flex items-center gap-1" role="group" aria-label="CPSAR social media and search">
+            <Link href="/search" aria-label="Search CPSAR website" className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-full text-[#CFE8F7] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
+              <Search aria-hidden="true" className="size-[21px]" />
+            </Link>
             {socialLinks.map(({ label, href, icon: Icon }) => (
               <a key={label} href={href} aria-label={label} target="_blank" rel="noopener noreferrer" className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-full text-[#CFE8F7] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
                 <Icon className="size-[21px]" aria-hidden="true" />
@@ -230,6 +234,9 @@ export function Navigation() {
                 </Link>
               ))}
               <div className="pt-3 border-t border-neutral-100 space-y-2 mt-2">
+                <Link href="/search" onClick={() => setIsMobileOpen(false)} className="flex min-h-11 items-center gap-2 rounded-md px-3 py-3 text-sm font-semibold text-[#173a60] hover:bg-neutral-50">
+                  <Search aria-hidden="true" className="size-4" /> Search
+                </Link>
                 <Link
                   href="/donate"
                   onClick={() => setIsMobileOpen(false)}
