@@ -13,7 +13,7 @@ import {
   Facebook,
   Linkedin,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -55,37 +55,47 @@ const socialLinks = [
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<
-    string | null
-  >(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileOpen(false);
+        setActiveDropdown(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       <div
         className="hidden border-b border-white/10 bg-[#173a60] lg:block"
       >
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-9">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-12">
           <p className="text-xs text-white/80">
             Rwanda&apos;s National Clinical Psychology Students Association
           </p>
-          <div className="flex items-center gap-1" aria-label="CPSAR social media">
+          <div className="flex items-center gap-1" role="group" aria-label="CPSAR social media">
             {socialLinks.map(({ label, href, icon: Icon }) => (
-            <a key={label} href={href} aria-label={label} target="_blank" rel="noopener noreferrer" className="inline-flex h-7 w-7 items-center justify-center text-white/75 transition-colors hover:text-white">
-                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+              <a key={label} href={href} aria-label={label} target="_blank" rel="noopener noreferrer" className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-full text-[#CFE8F7] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
+                <Icon className="size-[21px]" aria-hidden="true" />
               </a>
             ))}
           </div>
         </div>
       </div>
       {/* Main nav bar */}
-      <div className="border-b border-slate-200 bg-white shadow-sm">
+      <div className="relative border-b border-slate-200/90 bg-white/95 shadow-[0_8px_30px_rgba(16,43,75,0.08)] backdrop-blur-md before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-[#71C0DF]/70 before:to-transparent before:content-['']">
         <nav className="max-w-7xl mx-auto px-5 sm:px-8">
-          <div className="flex items-center justify-between h-[60px]">
+          <div className="flex items-center justify-between h-16 lg:h-[68px]">
             {/* Logo */}
             <Link
               href="/"
@@ -93,21 +103,21 @@ export function Navigation() {
               aria-label="CPSAR home"
             >
               <Image
-                src="/cpsar-logo.png"
+                src="/cpsar-logo-transparent.png"
                 alt="CPSAR — Clinical Psychology Students’ Association of Rwanda"
                 width={916}
                 height={210}
-                priority
-                className="h-9 w-[157px] object-contain sm:h-11 sm:w-[190px]"
+                fetchPriority="high"
+                className="h-9 w-[148px] object-contain sm:h-10 sm:w-[168px] xl:h-11 xl:w-[190px]"
               />
             </Link>
 
             {/* Desktop nav */}
-            <div className="hidden lg:flex items-center gap-0.5">
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-0 lg:flex">
               {navLinks.map((link) => (
                 <div
                   key={link.name}
-                  className="relative"
+                  className="relative shrink-0"
                   onMouseEnter={() => link.children && setActiveDropdown(link.name)}
                   onMouseLeave={() => setActiveDropdown(null)}
                   onFocus={() => link.children && setActiveDropdown(link.name)}
@@ -117,30 +127,27 @@ export function Navigation() {
                 >
                   <Link
                     href={link.path}
-                    className={`flex items-center gap-1 px-2 py-2 text-xs font-medium uppercase tracking-wide transition-all duration-150 xl:px-3 xl:text-[13px] ${
+                    onClick={() => setActiveDropdown(null)}
+                    className={`relative flex min-h-11 items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-2 text-[10px] font-semibold uppercase tracking-[0.025em] transition-colors duration-150 after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-0.5 after:rounded-full after:bg-[var(--cpsar-navy)] after:transition-transform after:duration-200 after:content-[''] xl:px-2 xl:text-[11px] 2xl:px-2.5 2xl:text-xs ${
                       (pathname === link.path || link.children?.some((child) => child.path === pathname))
-                        ? "text-[#24578E]"
-                        : "text-neutral-700 hover:text-[#173a60]"
+                        ? "text-[#14365F] after:scale-x-100"
+                        : "text-neutral-700 after:scale-x-0 hover:bg-[#f2f7fa] hover:text-[#173a60] hover:after:scale-x-100"
                     }`}
                     aria-expanded={link.children ? activeDropdown === link.name : undefined}
                     aria-controls={link.children ? `submenu-${link.name.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}` : undefined}
                   >
                     {link.name}
-                    {link.children && (
-                      <ChevronDown
-                        className={`w-3 h-3 transition-transform duration-150 ${activeDropdown === link.name ? "rotate-180" : ""}`}
-                      />
-                    )}
+                    {link.children && <ChevronDown aria-hidden="true" className={`size-3 shrink-0 transition-transform duration-150 ${activeDropdown === link.name ? "rotate-180" : ""}`} />}
                   </Link>
 
                   {link.children && (
                     <AnimatePresence>
                       {activeDropdown === link.name && (
                         <motion.div
-                          initial={{ opacity: 0, y: 6 }}
+                          initial={reduceMotion ? false : { opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 6 }}
-                          transition={{ duration: 0.12 }}
+                          exit={reduceMotion ? undefined : { opacity: 0, y: 6 }}
+                          transition={{ duration: reduceMotion ? 0 : 0.14 }}
                           id={`submenu-${link.name.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}`}
                           className="absolute left-0 top-full mt-1 w-60 overflow-hidden border border-black/6 bg-white py-1.5 shadow-lg"
                         >
@@ -148,7 +155,8 @@ export function Navigation() {
                             <Link
                               key={child.name}
                               href={child.path}
-                              className="block px-4 py-2.5 text-[13px] text-neutral-700 transition-colors hover:bg-neutral-50 hover:text-[#173a60]"
+                              onClick={() => setActiveDropdown(null)}
+                              className="relative block px-4 py-2.5 text-[13px] text-neutral-700 transition-colors hover:bg-[#f2f7fa] hover:text-[#173a60] after:absolute after:bottom-1 after:left-4 after:right-4 after:h-px after:origin-left after:scale-x-0 after:bg-[var(--cpsar-navy)] after:transition-transform after:content-[''] hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#24578E]"
                             >
                               {child.name}
                             </Link>
@@ -162,16 +170,10 @@ export function Navigation() {
             </div>
 
             {/* Right CTAs */}
-            <div className="hidden lg:flex items-center gap-1 xl:gap-2">
-              <Link
-                href="/contact"
-                className="px-2 py-2 text-xs font-medium text-neutral-700 transition-colors hover:text-[#173a60] xl:px-3 xl:text-[13px]"
-              >
-                Contact
-              </Link>
+            <div className="hidden shrink-0 items-center gap-1 lg:flex xl:gap-2">
               <Link
                 href="/donate"
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white bg-[#71C0DF] hover:bg-[#71C0DF]/90 transition-colors"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#71C0DF] px-5 py-2 text-xs font-bold text-[#102b4b] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-[#9be0f5] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24578E] motion-reduce:transform-none motion-reduce:transition-none"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 Donate
@@ -181,7 +183,7 @@ export function Navigation() {
             {/* Mobile toggle */}
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="p-2 text-[#173a60] transition-colors hover:bg-neutral-100 lg:hidden"
+              className="rounded-lg p-2 text-[#173a60] transition-colors hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14365F] lg:hidden"
               aria-label={isMobileOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={isMobileOpen}
               aria-controls="mobile-navigation"
@@ -201,12 +203,12 @@ export function Navigation() {
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
+            initial={reduceMotion ? false : { opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
             id="mobile-navigation"
-            className="lg:hidden bg-white border-b border-black/8 overflow-hidden"
+            className="lg:hidden overflow-hidden border-b border-slate-200 bg-white shadow-lg"
           >
             <div className="py-4 px-5 space-y-0.5">
               {navLinks.map((link) => link.children ? (

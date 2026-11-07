@@ -38,7 +38,7 @@ export function AboutPage() {
           <figure className="relative mx-auto w-full max-w-xl lg:ml-auto">
             <div aria-hidden="true" className="absolute -right-3 -top-3 h-full w-full rounded-2xl border-2 border-[#71C0DF] sm:-right-4 sm:-top-4" />
             <div className="relative overflow-hidden rounded-2xl bg-slate-200 shadow-xl shadow-[#173a60]/15">
-              <Image src="/images/HagyImagesStudio0782569627.jpg" alt="CPSAR members coming together as a community" width={1200} height={900} priority sizes="(max-width: 1024px) 100vw, 45vw" className="aspect-[5/4] w-full object-cover" />
+              <Image src="/images/HagyImagesStudio0782569627.jpg" alt="CPSAR members coming together as a community" width={1200} height={900} fetchPriority="high" sizes="(max-width: 1024px) 100vw, 45vw" className="aspect-[5/4] w-full object-cover" />
             </div>
             <figcaption className="relative mt-3 text-right text-xs font-medium tracking-wide text-slate-500">Learning, connection, and service</figcaption>
           </figure>
@@ -63,7 +63,7 @@ export function AboutPage() {
             </blockquote>
           </div>
           <figure className="overflow-hidden rounded-2xl bg-slate-100 shadow-xl shadow-[#173a60]/10">
-            <Image src="/images/HagyImagesStudio0782569627.jpg" alt="CPSAR members coming together as a community" width={1200} height={900} sizes="(max-width: 1024px) 100vw, 48vw" className="aspect-[4/3] w-full object-cover" />
+            <Image src="/images/HagyImagesStudio0782569627(11).jpg" alt="CPSAR students attending a learning session" width={1200} height={900} sizes="(max-width: 1024px) 100vw, 48vw" className="aspect-[4/3] w-full object-cover" />
             <figcaption className="border-t border-slate-100 bg-white px-5 py-4 text-sm text-slate-600">A community of students learning, connecting, and advocating together.</figcaption>
           </figure>
         </div>

@@ -43,7 +43,7 @@ export default function DonatePage() {
               <Link href="/contact" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#24578E] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#173a60] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#24578E]">
                 Ask how to donate <ArrowRight aria-hidden="true" className="size-4" />
               </Link>
-              <a href="tel:+250788418232" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[#24578E]/25 bg-white px-5 py-3 text-sm font-semibold text-[#173a60] transition-colors hover:bg-[#e8f1f8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#24578E]">
+              <a href="tel:+250791507709" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[#24578E]/25 bg-white px-5 py-3 text-sm font-semibold text-[#173a60] transition-colors hover:bg-[#e8f1f8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#24578E]">
                 Call CPSAR
               </a>
             </div>

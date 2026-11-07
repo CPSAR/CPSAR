@@ -1,3 +1,25 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+@keyframes cpsar-photo-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.cpsar-photo-marquee {
+  animation: cpsar-photo-marquee 48s linear infinite;
+  will-change: transform;
+}
+
+.cpsar-photo-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cpsar-photo-marquee {
+    animation: none;
+    will-change: auto;
+  }
+}

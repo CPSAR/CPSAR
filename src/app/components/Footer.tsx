@@ -27,7 +27,7 @@ const links = {
     { label: "Get in Touch", path: "/contact" },
     { label: "Join CPSAR", path: "/membership" },
     { label: "www.cpsarwanda.org", path: "https://www.cpsarwanda.org" },
-    { label: "+250 788 418 232", path: "tel:+250788418232" },
+    { label: "+250 791 507 709", path: "tel:+250791507709" },
     { label: "Kigali, Rwanda", path: "/contact" },
   ],
 };
@@ -69,24 +69,24 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-[#24578E] border-t border-white/6">
+    <footer className="border-t border-white/10 bg-[#14365F] text-white">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
 
         {/* Newsletter band */}
-        <div className="py-12 border-b border-white/6 flex flex-col sm:flex-row sm:items-center justify-between gap-8">
+        <div className="flex flex-col justify-between gap-8 border-b border-white/15 py-10 sm:py-12 md:flex-row md:items-center">
           <div>
             <p
-              className="text-white font-bold text-xl mb-1"
+              className="mb-1 text-xl font-bold text-white"
               style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}
             >
               Stay in the loop.
             </p>
-            <p className="text-white/35 text-sm">News, events, and resources — straight to your inbox.</p>
+            <p className="text-sm text-white/75">News, events, and resources — straight to your inbox.</p>
           </div>
           {done ? (
-            <p className="text-[#71C0DF] text-sm font-medium">You're subscribed ✓</p>
+            <p className="text-sm font-medium text-[#5BC0DE]">You&apos;re subscribed ✓</p>
           ) : (
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-2 w-full sm:w-auto">
+            <form onSubmit={handleNewsletterSubmit} className="flex w-full gap-2 md:w-auto">
               <div className="absolute h-px w-px overflow-hidden" aria-hidden="true">
                 <label htmlFor="newsletter-website">Leave this field empty</label>
                 <input id="newsletter-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
@@ -100,25 +100,25 @@ export function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 aria-label="Email address for newsletter"
-                className="flex-1 sm:w-64 bg-white/6 border border-white/10 rounded-none px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#71C0DF]/60 transition-colors"
+                className="min-h-11 min-w-0 flex-1 rounded-md border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/65 transition-colors focus:border-[#5BC0DE] focus:outline-none focus:ring-2 focus:ring-[#5BC0DE]/35 sm:w-64"
               />
               <button
                 type="submit"
                 disabled={isSubmitting}
                 aria-label="Subscribe to newsletter"
-                className="flex-shrink-0 w-10 h-10 rounded-none bg-[#71C0DF] flex items-center justify-center text-white hover:bg-[#71C0DF]/90 transition-colors"
+                className="flex min-h-11 min-w-11 flex-shrink-0 items-center justify-center rounded-md bg-[#5BC0DE] text-[#14365F] transition-colors hover:bg-[#8bd8eb] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-70"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
           )}
-          {submitError && <p role="alert" className="mt-3 text-sm text-red-400">{submitError}</p>}
+          {submitError && <p role="alert" className="mt-3 text-sm font-medium text-red-200">{submitError}</p>}
         </div>
 
         {/* Main footer grid */}
-        <div className="py-14 grid grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-10 lg:gap-16">
+        <div className="grid grid-cols-1 gap-8 py-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-16 lg:py-14">
           {/* Brand */}
-          <div className="col-span-2 lg:col-span-1">
+          <div className="col-span-full lg:col-span-1">
             <Link href="/" aria-label="CPSAR home" className="mb-6 inline-flex">
               <span className="flex h-12 w-[200px] items-center justify-center bg-white">
                 <Image
@@ -130,7 +130,7 @@ export function Footer() {
                 />
               </span>
             </Link>
-            <p className="text-white/35 text-sm leading-relaxed max-w-xs mb-8">
+            <p className="mb-8 max-w-xs text-sm leading-relaxed text-white/75">
               Empowering future clinical psychologists in Rwanda through education, collaboration, and mental health advocacy 
             </p>
             <div className="flex gap-2">
@@ -141,7 +141,7 @@ export function Footer() {
                   aria-label={label}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-none border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-[#71C0DF] hover:bg-[#71C0DF]/10 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#71C0DF]"
+                  className="flex size-11 items-center justify-center rounded-lg border border-white/20 text-white/75 transition-all hover:border-[#5BC0DE] hover:bg-[#5BC0DE]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]"
                 >
                   <Icon className="w-4 h-4" />
                 </a>
@@ -153,7 +153,7 @@ export function Footer() {
           {Object.entries(links).map(([section, items]) => (
             <div key={section}>
               <p
-                className="text-white/25 text-xs font-semibold uppercase tracking-widest mb-5"
+                className="mb-5 text-xs font-semibold uppercase tracking-widest text-[#5BC0DE]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {section}
@@ -163,7 +163,7 @@ export function Footer() {
                   <li key={item.label}>
                     <Link
                       href={item.path}
-                      className="text-white/45 text-sm hover:text-white transition-colors duration-150"
+                      className="text-sm text-white/75 transition-colors duration-150 hover:text-white focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]"
                     >
                       {item.label}
                     </Link>
@@ -175,13 +175,13 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-white/20 text-xs">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/15 py-6 md:flex-row">
+          <p className="text-xs text-white/65">
             © {new Date().getFullYear()} CPSAR — Clinical Psychology Students Association of Rwanda
           </p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 md:justify-end">
             {["Privacy Policy", "Terms of Service", "Accessibility"].map((l) => (
-              <a key={l} href="#" className="text-white/20 text-xs hover:text-white/50 transition-colors">
+              <a key={l} href="#" className="text-xs text-white/65 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
                 {l}
               </a>
             ))}

@@ -6,7 +6,7 @@ import { Globe, Phone, Instagram, Twitter, Facebook, Linkedin, Send, ChevronDown
 
 const contactDetails = [
   { icon: Globe, label: "Website", value: "www.cpsarwanda.org", href: "https://www.cpsarwanda.org" },
-  { icon: Phone, label: "Phone", value: "+250 788 418 232", href: "tel:+250788418232" },
+  { icon: Phone, label: "Phone", value: "+250 791 507 709", href: "tel:+250791507709" },
   { icon: Instagram, label: "Instagram", value: "@cpsa_rwanda", href: "https://instagram.com/cpsa_rwanda" },
   { icon: Twitter, label: "X / Twitter", value: "@cpsarwanda", href: "https://x.com/cpsarwanda" },
 ];

@@ -1,6 +1,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --cpsar-navy: #14365F;
+  --cpsar-light-blue: #5BC0DE;
   --font-size: 16px;
   --background: #ffffff;
   --foreground: #0a0a0a;

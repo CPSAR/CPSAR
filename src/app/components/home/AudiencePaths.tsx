@@ -49,38 +49,37 @@ const pathways = [
 
 export function AudiencePaths() {
   return (
-    <section aria-labelledby="home-paths-title" className="relative overflow-hidden bg-[#f3f7fb] py-16 sm:py-20 lg:py-24">
-      <div aria-hidden="true" className="absolute -right-28 -top-40 size-[28rem] rounded-full border border-[#24578E]/[0.07]" />
-      <div aria-hidden="true" className="absolute -right-12 -top-24 size-[22rem] rounded-full border border-[#24578E]/[0.07]" />
-      <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
-        <header className="mb-9 flex flex-col gap-4 border-b border-[#173a60]/10 pb-7 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+    <section aria-labelledby="home-paths-title" className="relative overflow-hidden bg-[#eaf4fa] py-12 sm:py-16 lg:py-20">
+      <div aria-hidden="true" className="absolute -right-28 -top-40 size-[28rem] rounded-full border border-[#14365F]/[0.07]" />
+      <div aria-hidden="true" className="absolute -right-12 -top-24 size-[22rem] rounded-full border border-[#14365F]/[0.07]" />
+      <div className="relative mx-auto max-w-[1800px] px-5 sm:px-8 lg:px-10">
+        <header className="mb-9 flex flex-col gap-4 border-b border-[#173a60]/10 pb-7 sm:mb-12 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#24578E]">Your guide to CPSAR</p>
-            <h2 id="home-paths-title" className="mt-3 max-w-xl text-3xl font-bold tracking-[-0.035em] text-[#122c4b] sm:text-4xl lg:text-[2.75rem]">
+            <h2 id="home-paths-title" className="max-w-4xl text-[clamp(2.5rem,4.1vw,4rem)] font-bold leading-[1.04] tracking-[-0.045em] text-[#14365F] [text-wrap:balance]">
               Find what you came for.
             </h2>
           </div>
-          <p className="max-w-sm text-sm leading-6 text-slate-600 sm:text-right">
+          <p className="max-w-md pb-1 text-base leading-7 text-[#35516f] sm:text-right sm:text-lg">
             Choose a path to explore the association, its work, and ways to take part.
           </p>
         </header>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:gap-5">
           {pathways.map(({ number, icon: Icon, title, description, links }) => (
-            <article key={number} className="group flex min-h-64 flex-col rounded-2xl border border-[#173a60]/10 bg-white p-5 shadow-[0_8px_30px_rgba(18,44,75,0.035)] transition duration-200 hover:-translate-y-1 hover:border-[#71C0DF]/70 hover:shadow-[0_18px_45px_rgba(18,44,75,0.10)] motion-reduce:transform-none motion-reduce:transition-none sm:p-6">
+            <article key={number} className="group flex min-h-[23rem] flex-col rounded-[1.4rem] border border-[#dce6f0] bg-white p-5 shadow-[0_8px_30px_rgba(18,44,75,0.035)] transition duration-200 hover:-translate-y-1 hover:border-[#71C0DF] hover:shadow-[0_18px_45px_rgba(18,44,75,0.10)] motion-reduce:transform-none motion-reduce:transition-none sm:p-7 lg:p-4 xl:min-h-[27rem] xl:p-8">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold tracking-[0.16em] text-[#24578E]/55">{number}</span>
-                <span className="flex size-10 items-center justify-center rounded-xl bg-[#eaf5fa] text-[#24578E] transition-colors group-hover:bg-[#d8f0f8]">
-                  <Icon aria-hidden="true" className="size-5" />
+                <span className="text-sm font-semibold tracking-[0.16em] text-[#14365F]/65">{number}</span>
+                <span className="flex size-14 items-center justify-center rounded-lg bg-[#e4f4fa] text-[#14365F] transition-colors group-hover:bg-[#d3eff8]">
+                  <Icon aria-hidden="true" className="size-6" />
                 </span>
               </div>
-              <h3 className="mt-6 text-lg font-bold tracking-tight text-[#122c4b]">{title}</h3>
-              <p className="mt-2 min-h-12 text-sm leading-6 text-slate-600">{description}</p>
-              <ul className="mt-auto flex flex-wrap gap-x-4 gap-y-2 border-t border-slate-100 pt-4">
+              <h3 className="mt-8 text-xl font-bold tracking-tight text-[#14365F] sm:text-2xl lg:text-lg xl:text-2xl">{title}</h3>
+              <p className="mt-3 min-h-14 text-base leading-7 text-slate-600">{description}</p>
+              <ul className="mt-auto grid grid-cols-2 gap-x-3 gap-y-3 border-t border-slate-100 pt-6 lg:grid-cols-1 xl:grid-cols-2">
                 {links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="inline-flex min-h-10 items-center gap-1 rounded-sm text-sm font-semibold text-[#24578E] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24578E]">
-                      {link.label}<ArrowRight aria-hidden="true" className="size-3.5" />
+                    <Link href={link.href} className="inline-flex min-h-11 items-center gap-1.5 rounded-sm text-sm font-semibold text-[#14365F] underline-offset-4 hover:text-[#24578E] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14365F] sm:text-base">
+                      {link.label}<ArrowRight aria-hidden="true" className="size-4 shrink-0" />
                     </Link>
                   </li>
                 ))}
@@ -89,12 +88,6 @@ export function AudiencePaths() {
           ))}
         </div>
 
-        <p className="mt-7 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
-          Want to support CPSAR?
-          <Link href="/donate" className="inline-flex min-h-11 items-center gap-1 rounded-sm font-semibold text-[#24578E] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24578E]">
-            Learn about donating<ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
-        </p>
       </div>
     </section>
   );
