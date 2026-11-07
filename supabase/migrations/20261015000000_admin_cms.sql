@@ -76,7 +76,7 @@ create table if not exists public.alumni_members (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   graduation_year integer,
-  current_role text not null default '',
+  "current_role" text not null default '',
   bio text not null default '',
   image_url text,
   published boolean not null default false,
