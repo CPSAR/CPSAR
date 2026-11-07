@@ -8,6 +8,7 @@ const allowedTypes = new Map([
   ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"],
 ]);
 const logoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const contentImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return NextResponse.json({ error: "Request not allowed." }, { status: 403 });
@@ -17,14 +18,18 @@ export async function POST(request: Request) {
   const file = form?.get("file");
   const kind = form?.get("kind");
   const isPartnerLogo = kind === "partner-logo";
+  const isContentImage = kind === "image";
   if (!(file instanceof File)) return NextResponse.json({ error: isPartnerLogo ? "Choose a partner logo to upload." : "Choose a document to upload." }, { status: 400 });
-  if (isPartnerLogo ? (!logoTypes.has(file.type) || file.size > 5 * 1024 * 1024) : (!allowedTypes.has(file.type) || file.size > 20 * 1024 * 1024)) {
+  if (isContentImage && (!contentImageTypes.has(file.type) || file.size > 8 * 1024 * 1024)) {
+    return NextResponse.json({ error: "Upload a JPG, PNG, or WebP image smaller than 8 MB." }, { status: 400 });
+  }
+  if (isPartnerLogo ? (!logoTypes.has(file.type) || file.size > 5 * 1024 * 1024) : !isContentImage && (!allowedTypes.has(file.type) || file.size > 20 * 1024 * 1024)) {
     if (isPartnerLogo) return NextResponse.json({ error: "Upload a PNG, JPG, or WebP image smaller than 5 MB." }, { status: 400 });
     return NextResponse.json({ error: "Upload a PDF, DOC, or DOCX file smaller than 20 MB." }, { status: 400 });
   }
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-100) || (isPartnerLogo ? "partner-logo" : "document");
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-100) || (isContentImage ? "image" : isPartnerLogo ? "partner-logo" : "document");
   const path = `${crypto.randomUUID()}-${safeName}`;
-  const bucket = isPartnerLogo ? "cpsar-partner-logos" : "cpsar-resources";
+  const bucket = isContentImage ? "cpsar-images" : isPartnerLogo ? "cpsar-partner-logos" : "cpsar-resources";
   const { error } = await session.client.storage.from(bucket).upload(path, file, { contentType: file.type });
   if (error) return NextResponse.json({ error: `The ${isPartnerLogo ? "logo" : "document"} could not be uploaded. Check that storage is configured.` }, { status: 503 });
   const { data } = session.client.storage.from(bucket).getPublicUrl(path);
