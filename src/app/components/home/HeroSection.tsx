@@ -53,7 +53,7 @@ export function HeroSection() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-[48ch] text-base leading-[1.5] text-white sm:text-lg">
-            A student-led community connecting clinical psychology students in Rwanda through learning, research, and community service.
+            CPSAR is a national professional development and advocacy association bringing together clinical psychology students and emerging professionals to advance psychological education, research, collaboration and community mental health initiatives.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
