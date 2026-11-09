@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ArrowRight } from "lucide-react";
+import { HeroBackgroundSlideshow } from "./HeroBackgroundSlideshow";
 
 const photoStrip = [
   "/images/HagyImagesStudio0782569627.jpg",
@@ -11,19 +12,22 @@ const photoStrip = [
   "/images/HagyImagesStudio0782569627(2).jpg",
   "/images/HagyImagesStudio0782569627(22).jpg",
   "/images/HagyImagesStudio0782569627(90).jpg",
+  "/images/cpsar-outdoor-conversation.webp",
+  "/images/cpsar-workshop-audience.webp",
+  "/images/cpsar-workshop-speaker.webp",
+  "/images/cpsar-outdoor-discussion.webp",
+  "/images/cpsar-conference-panel.webp",
+  "/images/cpsar-delegates-session.webp",
+  "/images/cpsar-campus-group.webp",
+  "/images/cpsar-conference-hall.webp",
+  "/images/cpsar-community-group.webp",
+  "/images/cpsar-peer-discussion.webp",
 ];
 
 export function HeroSection() {
   return (
     <section className="relative isolate flex min-h-[660px] flex-col overflow-hidden bg-[var(--cpsar-navy)] text-white sm:min-h-[700px] lg:min-h-[min(760px,calc(100svh-116px))]">
-      <Image
-        src="/images/HagyImagesStudio0782569627(90).jpg"
-        alt=""
-        fill
-        fetchPriority="high"
-        sizes="100vw"
-        className="object-cover object-center"
-      />
+      <HeroBackgroundSlideshow />
 
       {/* A deep blue veil protects text contrast while preserving the photo. */}
       <div
