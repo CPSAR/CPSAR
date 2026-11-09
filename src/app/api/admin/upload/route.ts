@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const kind = form?.get("kind");
   const isPartnerLogo = kind === "partner-logo";
   const isContentImage = kind === "image";
-  if (!(file instanceof File)) return NextResponse.json({ error: isPartnerLogo ? "Choose a partner logo to upload." : "Choose a document to upload." }, { status: 400 });
+  if (!(file instanceof File)) return NextResponse.json({ error: isContentImage ? "Choose a content image to upload." : isPartnerLogo ? "Choose a partner logo to upload." : "Choose a document to upload." }, { status: 400 });
   if (isContentImage && (!contentImageTypes.has(file.type) || file.size > 8 * 1024 * 1024)) {
     return NextResponse.json({ error: "Upload a JPG, PNG, or WebP image smaller than 8 MB." }, { status: 400 });
   }
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   const path = `${crypto.randomUUID()}-${safeName}`;
   const bucket = isContentImage ? "cpsar-images" : isPartnerLogo ? "cpsar-partner-logos" : "cpsar-resources";
   const { error } = await session.client.storage.from(bucket).upload(path, file, { contentType: file.type });
-  if (error) return NextResponse.json({ error: `The ${isPartnerLogo ? "logo" : "document"} could not be uploaded. Check that storage is configured.` }, { status: 503 });
+  if (error) return NextResponse.json({ error: `The ${isContentImage ? "image" : isPartnerLogo ? "logo" : "document"} could not be uploaded. Check that storage is configured.` }, { status: 503 });
   const { data } = session.client.storage.from(bucket).getPublicUrl(path);
   return NextResponse.json({ url: data.publicUrl });
 }
