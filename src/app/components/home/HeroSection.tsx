@@ -49,7 +49,7 @@ export function HeroSection() {
             className="mx-auto max-w-[20ch] text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.1] tracking-[-0.045em] text-white [text-wrap:balance] [text-shadow:0_4px_28px_rgba(4,22,42,0.35)]"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Advancing mental health <span className="text-[var(--cpsar-light-blue)]">in Rwanda.</span>
+            Advancing clinical psychology and mental health <span className="text-[var(--cpsar-light-blue)]">in Rwanda.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-[48ch] text-base leading-[1.5] text-white sm:text-lg">

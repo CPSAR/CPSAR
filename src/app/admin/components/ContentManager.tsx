@@ -5,10 +5,37 @@ import { cmsCollections, type CmsCollection } from "@/lib/admin-cms";
 
 type Item = Record<string, string | number | boolean | null> & { id: string };
 const labels: Record<string, string> = {
-  title: "Title", name: "Name", slug: "URL slug", summary: "Summary", body: "Full text", category: "Category", location: "Location", starts_at: "Starts", ends_at: "Ends", published_at: "Publish date", author: "Author", role: "Role", bio: "Biography", quote: "Story / quote", image_url: "Image URL", logo_url: "Logo URL", website: "Website", resource_url: "Document URL", graduation_year: "Graduation year", current_role: "Current role", display_order: "Display order",
+  title: "Title", name: "Name", slug: "URL slug", summary: "Summary", body: "Full text", category: "Category", location: "Location", starts_at: "Starts", ends_at: "Ends", published_at: "Publish date", author: "Author", role: "Role", bio: "Biography", quote: "Story / quote", image_url: "Content image", logo_url: "Logo URL", website: "Website", resource_url: "Document URL", graduation_year: "Graduation year", current_role: "Current role", display_order: "Display order",
 };
 const multiline = new Set(["body", "bio", "summary", "quote"]);
 const booleans = new Set(["published", "featured"]);
+
+async function optimizeImageForUpload(file: File) {
+  const bitmap = await createImageBitmap(file);
+  const encode = async (maxDimension: number, quality: number) => {
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("This browser could not prepare the image. Try a JPG, PNG, or WebP file.");
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+    if (!blob) throw new Error("This image could not be prepared. Try another file.");
+    return blob;
+  };
+
+  try {
+    let blob = await encode(2560, 0.88);
+    if (blob.size > 4 * 1024 * 1024) blob = await encode(1920, 0.82);
+    if (blob.size > 4 * 1024 * 1024) blob = await encode(1600, 0.76);
+    if (blob.size > 4 * 1024 * 1024) throw new Error("This image is still too large after optimization. Choose a smaller image.");
+    const filename = file.name.replace(/\.[^.]+$/, "") || "cpsar-image";
+    return new File([blob], `${filename}.webp`, { type: "image/webp" });
+  } finally {
+    bitmap.close();
+  }
+}
 
 export function ContentManager({ collection }: { collection: CmsCollection }) {
   const config = cmsCollections[collection];
@@ -72,7 +99,8 @@ export function ContentManager({ collection }: { collection: CmsCollection }) {
   }
 
   async function upload(file: File, kind: "document" | "partner-logo" | "image" = "document") {
-    const form = new FormData(); form.set("file", file); form.set("kind", kind);
+    const uploadFile = kind === "image" ? await optimizeImageForUpload(file) : file;
+    const form = new FormData(); form.set("file", uploadFile); form.set("kind", kind);
     const response = await fetch("/api/admin/upload", { method: "POST", body: form });
     const result = await response.json(); if (!response.ok) throw new Error(result.error || "Upload failed.");
     return result.url as string;
