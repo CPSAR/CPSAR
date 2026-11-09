@@ -82,7 +82,7 @@ export function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-12">
           <p className="text-xs text-white/80">
-            Rwanda&apos;s National Clinical Psychology Students Association
+            CLINICAL PSYCHOLOGY STUDENTS ASSOCIATION OF RWANDA
           </p>
           <div className="flex items-center gap-1" role="group" aria-label="CPSAR social media and search">
             <Link href="/search" aria-label="Search CPSAR website" className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-full text-[#CFE8F7] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">

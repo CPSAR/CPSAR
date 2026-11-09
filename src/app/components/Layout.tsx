@@ -34,6 +34,8 @@ function ScrollProgress() {
 export function Layout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
+  const desktopHeaderOverlapRoutes = ["/about", "/leadership", "/membership", "/programs", "/events", "/resources", "/partners", "/gallery", "/news", "/search"];
+  const needsDesktopHeaderOffset = desktopHeaderOverlapRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -56,7 +58,7 @@ export function Layout({ children }: { children: ReactNode }) {
           key={pathname}
           id="maincontent"
           tabIndex={-1}
-          className="flex-1 scroll-mt-24 outline-none"
+          className={`flex-1 scroll-mt-24 outline-none ${needsDesktopHeaderOffset ? "lg:pt-[52px]" : ""}`}
           initial={reduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}

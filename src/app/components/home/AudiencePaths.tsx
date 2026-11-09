@@ -49,17 +49,17 @@ const pathways = [
 
 export function AudiencePaths() {
   return (
-    <section aria-labelledby="home-paths-title" className="relative overflow-hidden bg-[#eaf4fa] py-12 sm:py-16 lg:py-20">
-      <div aria-hidden="true" className="absolute -right-28 -top-40 size-[28rem] rounded-full border border-[#14365F]/[0.07]" />
-      <div aria-hidden="true" className="absolute -right-12 -top-24 size-[22rem] rounded-full border border-[#14365F]/[0.07]" />
+    <section aria-labelledby="home-paths-title" className="relative overflow-hidden bg-[#14365F] py-12 sm:py-16 lg:py-20">
+      <div aria-hidden="true" className="absolute -right-28 -top-40 size-[28rem] rounded-full border border-white/[0.08]" />
+      <div aria-hidden="true" className="absolute -right-12 -top-24 size-[22rem] rounded-full border border-white/[0.08]" />
       <div className="relative mx-auto max-w-[1800px] px-5 sm:px-8 lg:px-10">
-        <header className="mb-9 flex flex-col gap-4 border-b border-[#173a60]/10 pb-7 sm:mb-12 xl:flex-row xl:items-end xl:justify-between">
+        <header className="mb-9 flex flex-col gap-4 border-b border-white/20 pb-7 sm:mb-12 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h2 id="home-paths-title" className="max-w-4xl text-[clamp(2.5rem,4.1vw,4rem)] font-bold leading-[1.04] tracking-[-0.045em] text-[#14365F] [text-wrap:balance]">
+            <h2 id="home-paths-title" className="max-w-4xl text-[clamp(2.5rem,4.1vw,4rem)] font-bold leading-[1.04] tracking-[-0.045em] text-white [text-wrap:balance]">
               Find what you came for.
             </h2>
           </div>
-          <p className="max-w-md pb-1 text-base leading-7 text-[#35516f] sm:text-right sm:text-lg">
+          <p className="max-w-md pb-1 text-base leading-7 text-[#d7e8f5] sm:text-right sm:text-lg">
             Choose a path to explore the association, its work, and ways to take part.
           </p>
         </header>
