@@ -8,11 +8,18 @@ export const runtime = "nodejs";
 
 function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<string, unknown>) {
   const config = cmsCollections[collection];
-  const output: Record<string, string | number | boolean | null> = {};
+  const output: Record<string, unknown> = {};
 
   for (const field of config.fields) {
     if (!(field in input)) continue;
     const value = input[field];
+    if (field === "gallery_images" && collection === "programmes") {
+      if (!Array.isArray(value) || value.length > 24 || value.some((image) => typeof image !== "string" || image.length > 2048 || (image.startsWith("/") ? image.startsWith("//") : !/^https:\/\//i.test(image)))) {
+        return { error: "Programme gallery must contain up to 24 valid HTTPS image URLs or local paths." };
+      }
+      output[field] = value;
+      continue;
+    }
     if (field === "published" || field === "featured") {
       if (typeof value !== "boolean") return { error: `${field} must be true or false.` };
       output[field] = value;
@@ -55,6 +62,7 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
   if (collection === "articles" && output.published === true && !output.published_at) {
     output.published_at = new Date().toISOString();
   }
+  if (collection === "programmes" && "gallery_images" in output) output.image_url = null;
   if (collection === "resources") delete output.slug;
 
   return { data: output };
@@ -62,7 +70,7 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
 
 function revalidateCollection(collection: keyof typeof cmsCollections) {
   const paths: Partial<Record<keyof typeof cmsCollections, string[]>> = {
-    programmes: ["/programs", "/"],
+    programmes: ["/programs", "/programs/[slug]", "/"],
     events: ["/events", "/"],
     articles: ["/news", "/"],
     resources: ["/resources", "/"],

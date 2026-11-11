@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { cmsCollections, type CmsCollection } from "@/lib/admin-cms";
 
-type Item = Record<string, string | number | boolean | null> & { id: string };
+type Item = Record<string, string | number | boolean | null | string[]> & { id: string };
 const labels: Record<string, string> = {
-  title: "Title", name: "Name", slug: "URL slug", summary: "Summary", body: "Full text", category: "Category", location: "Location", starts_at: "Starts", ends_at: "Ends", published_at: "Publish date", author: "Author", role: "Role", bio: "Biography", quote: "Story / quote", image_url: "Content image", logo_url: "Logo URL", website: "Website", resource_url: "Document URL", graduation_year: "Graduation year", current_role: "Current role", display_order: "Display order",
+  title: "Title", name: "Name", slug: "URL slug", summary: "Summary", body: "Full text", category: "Category", location: "Location", starts_at: "Starts", ends_at: "Ends", published_at: "Publish date", author: "Author", role: "Role", bio: "Biography", quote: "Story / quote", image_url: "Content image", gallery_images: "Programme photo gallery", logo_url: "Logo URL", website: "Website", resource_url: "Document URL", graduation_year: "Graduation year", current_role: "Current role", display_order: "Display order",
 };
 const multiline = new Set(["body", "bio", "summary", "quote"]);
 const booleans = new Set(["published", "featured"]);
@@ -37,6 +37,55 @@ async function optimizeImageForUpload(file: File) {
   }
 }
 
+function ProgrammeGalleryField({
+  images,
+  busy,
+  upload,
+  onChange,
+  onBusyChange,
+  onError,
+}: {
+  images: string[];
+  busy: boolean;
+  upload: (file: File, kind: "image") => Promise<string>;
+  onChange: (images: string[]) => void;
+  onBusyChange: (busy: boolean) => void;
+  onError: (message: string) => void;
+}) {
+  async function addFiles(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const files = Array.from(input.files ?? []);
+    input.value = "";
+    if (!files.length) return;
+    if (images.length + files.length > 24) {
+      onError("A programme gallery can contain up to 24 photos.");
+      return;
+    }
+
+    onBusyChange(true);
+    onError("");
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) uploaded.push(await upload(file, "image"));
+      onChange([...images, ...uploaded]);
+    } catch (cause) {
+      onError(cause instanceof Error ? cause.message : "Could not upload the gallery photos.");
+    } finally {
+      onBusyChange(false);
+    }
+  }
+
+  return (
+    <div className="mt-1.5 space-y-3 sm:col-span-2">
+      <input type="hidden" name="gallery_images" value={JSON.stringify(images)} />
+      <p className="text-sm text-slate-600">Upload several photos to show a gallery on this programme’s public page.</p>
+      <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={busy || images.length >= 24} aria-label="Upload programme gallery photos" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-[#173a60]" onChange={addFiles} />
+      <p className="text-xs text-slate-500">JPG, PNG, or WebP. Photos are optimized before upload. Maximum 24 photos.</p>
+      {images.length > 0 && <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{images.map((image, index) => <li key={`${image}-${index}`} className="relative overflow-hidden rounded-lg border border-slate-200"><img src={image} alt={`Programme gallery photo ${index + 1}`} className="h-32 w-full object-cover" /><button type="button" disabled={busy} onClick={() => onChange(images.filter((_, imageIndex) => imageIndex !== index))} className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-xs font-semibold text-slate-800 shadow hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#24578E]" aria-label={`Remove photo ${index + 1}`}>Remove</button></li>)}</ul>}
+    </div>
+  );
+}
+
 export function ContentManager({ collection }: { collection: CmsCollection }) {
   const config = cmsCollections[collection];
   const [items, setItems] = useState<Item[]>([]);
@@ -61,7 +110,7 @@ export function ContentManager({ collection }: { collection: CmsCollection }) {
   const fields = useMemo(() => config.fields as readonly string[], [config.fields]);
   function newItem() {
     const initial: Item = { id: "" };
-    fields.forEach((field) => { initial[field] = booleans.has(field) ? false : ""; });
+    fields.forEach((field) => { initial[field] = booleans.has(field) ? false : field === "gallery_images" ? [] : ""; });
     initial.published = false;
     setEditing(initial); setNotice(""); setError("");
   }
@@ -73,7 +122,10 @@ export function ContentManager({ collection }: { collection: CmsCollection }) {
     const data: Record<string, unknown> = {};
     fields.forEach((field) => {
       if (booleans.has(field)) data[field] = form.get(field) === "on";
-      else {
+      else if (field === "gallery_images") {
+        try { data[field] = JSON.parse(String(form.get(field) ?? "[]")); }
+        catch { data[field] = []; }
+      } else {
         const value = String(form.get(field) ?? "");
         data[field] = field.endsWith("_at") && value ? new Date(value).toISOString() : value;
       }
@@ -112,7 +164,7 @@ export function ContentManager({ collection }: { collection: CmsCollection }) {
     {editing && <form onSubmit={save} className="mb-7 grid gap-4 rounded-xl bg-white p-5 shadow-sm sm:grid-cols-2">
       <h2 className="text-xl font-bold sm:col-span-2">{editing.id ? "Edit item" : "New item"}</h2>
       {fields.map((field) => booleans.has(field) ? <label key={field} className="flex items-center gap-2 text-sm font-medium sm:col-span-2"><input type="checkbox" name={field} defaultChecked={Boolean(editing[field])} className="size-4 accent-[#24578E]" />{field === "published" ? "Published on the public website" : "Feature this item"}</label> : <label key={field} className={`block text-sm font-medium text-slate-700 ${multiline.has(field) ? "sm:col-span-2" : ""}`}>{labels[field] ?? field}
-        {field === "image_url" ? <div className="mt-1.5 space-y-3"><input name={field} defaultValue={String(editing[field] ?? "")} placeholder="Paste an image URL or upload a file below" className="w-full rounded-lg border border-slate-300 px-3 py-2" required={config.required.includes(field as never)} /><p className="text-xs font-semibold text-[#173a60]">Upload an image from your device</p><input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Upload image" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-[#173a60]" onChange={async (event) => { const file = event.currentTarget.files?.[0]; if (!file) return; const input = event.currentTarget.form?.elements.namedItem(field) as HTMLInputElement; setBusy(true); setError(""); try { const url = await upload(file, "image"); if (input) input.value = url; setEditing((current) => current ? { ...current, image_url: url } : current); } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } }} />{typeof editing.image_url === "string" && editing.image_url && <img src={editing.image_url} alt={`${String(editing.name ?? editing.title ?? "Content")} preview`} className="max-h-56 w-auto rounded-xl border border-slate-200 object-cover" />}<p className="text-xs text-slate-500">JPG, PNG, or WebP. Large photos are optimized automatically before upload.</p></div> : field === "resource_url" ? <div className="mt-1.5 space-y-2"><input name={field} defaultValue={String(editing[field] ?? "")} placeholder="https://… or /path" className="w-full rounded-lg border border-slate-300 px-3 py-2" /><input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="Upload document" className="block w-full text-sm" onChange={async (event) => { const file = event.target.files?.[0]; if (!file) return; const input = event.currentTarget.form?.elements.namedItem(field) as HTMLInputElement; setBusy(true); setError(""); try { const url = await upload(file); if (input) input.value = url; } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } }} /></div> : field === "logo_url" && collection === "partners" ? <div className="mt-1.5 space-y-3"><input name={field} defaultValue={String(editing[field] ?? "")} placeholder="Logo URL (or upload below)" className="w-full rounded-lg border border-slate-300 px-3 py-2" /><input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Upload partner logo" className="block w-full text-sm" onChange={async (event) => { const file = event.currentTarget.files?.[0]; if (!file) return; const input = event.currentTarget.form?.elements.namedItem(field) as HTMLInputElement; setBusy(true); setError(""); try { const url = await upload(file, "partner-logo"); if (input) input.value = url; setEditing((current) => current ? { ...current, logo_url: url } : current); } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } }} />{typeof editing.logo_url === "string" && editing.logo_url && <img src={editing.logo_url} alt="Current partner logo preview" className="h-16 max-w-48 rounded border border-slate-200 bg-white p-2 object-contain" />}<p className="text-xs text-slate-500">PNG, JPG, or WebP, up to 5 MB. Uploaded files are stored in CPSAR media storage.</p></div> : multiline.has(field) ? <textarea name={field} defaultValue={String(editing[field] ?? "")} rows={field === "body" || field === "bio" ? 7 : 3} maxLength={20_000} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2" /> : <input name={field} type={field.endsWith("_at") ? "datetime-local" : field === "graduation_year" || field === "display_order" ? "number" : "text"} defaultValue={field.endsWith("_at") && editing[field] ? new Date(String(editing[field])).toISOString().slice(0, 16) : String(editing[field] ?? "")} required={config.required.includes(field as never)} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2" />}
+        {field === "gallery_images" && collection === "programmes" ? <ProgrammeGalleryField images={Array.isArray(editing.gallery_images) ? editing.gallery_images.filter((image): image is string => typeof image === "string") : typeof editing.image_url === "string" && editing.image_url ? [editing.image_url] : []} busy={busy} upload={upload} onChange={(images) => setEditing((current) => current ? { ...current, gallery_images: images } : current)} onBusyChange={setBusy} onError={setError} /> : field === "image_url" ? <div className="mt-1.5 space-y-3"><input name={field} defaultValue={String(editing[field] ?? "")} placeholder="Paste an image URL or upload a file below" className="w-full rounded-lg border border-slate-300 px-3 py-2" required={config.required.includes(field as never)} /><p className="text-xs font-semibold text-[#173a60]">Upload an image from your device</p><input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Upload image" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-[#173a60]" onChange={async (event) => { const file = event.currentTarget.files?.[0]; if (!file) return; const input = event.currentTarget.form?.elements.namedItem(field) as HTMLInputElement; setBusy(true); setError(""); try { const url = await upload(file, "image"); if (input) input.value = url; setEditing((current) => current ? { ...current, image_url: url } : current); } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } }} />{typeof editing.image_url === "string" && editing.image_url && <img src={editing.image_url} alt={`${String(editing.name ?? editing.title ?? "Content")} preview`} className="max-h-56 w-auto rounded-xl border border-slate-200 object-cover" />}<p className="text-xs text-slate-500">JPG, PNG, or WebP. Large photos are optimized automatically before upload.</p></div> : field === "resource_url" ? <div className="mt-1.5 space-y-2"><input name={field} defaultValue={String(editing[field] ?? "")} placeholder="https://… or /path" className="w-full rounded-lg border border-slate-300 px-3 py-2" /><input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="Upload document" className="block w-full text-sm" onChange={async (event) => { const file = event.target.files?.[0]; if (!file) return; const input = event.currentTarget.form?.elements.namedItem(field) as HTMLInputElement; setBusy(true); setError(""); try { const url = await upload(file); if (input) input.value = url; } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } }} /></div> : field === "logo_url" && collection === "partners" ? <div className="mt-1.5 space-y-3"><input name={field} defaultValue={String(editing[field] ?? "")} placeholder="Logo URL (or upload below)" className="w-full rounded-lg border border-slate-300 px-3 py-2" /><input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Upload partner logo" className="block w-full text-sm" onChange={async (event) => { const file = event.currentTarget.files?.[0]; if (!file) return; const input = event.currentTarget.form?.elements.namedItem(field) as HTMLInputElement; setBusy(true); setError(""); try { const url = await upload(file, "partner-logo"); if (input) input.value = url; setEditing((current) => current ? { ...current, logo_url: url } : current); } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } }} />{typeof editing.logo_url === "string" && editing.logo_url && <img src={editing.logo_url} alt="Current partner logo preview" className="h-16 max-w-48 rounded border border-slate-200 bg-white p-2 object-contain" />}<p className="text-xs text-slate-500">PNG, JPG, or WebP, up to 5 MB. Uploaded files are stored in CPSAR media storage.</p></div> : multiline.has(field) ? <textarea name={field} defaultValue={String(editing[field] ?? "")} rows={field === "body" || field === "bio" ? 7 : 3} maxLength={20_000} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2" /> : <input name={field} type={field.endsWith("_at") ? "datetime-local" : field === "graduation_year" || field === "display_order" ? "number" : "text"} defaultValue={field.endsWith("_at") && editing[field] ? new Date(String(editing[field])).toISOString().slice(0, 16) : String(editing[field] ?? "")} required={config.required.includes(field as never)} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2" />}
       </label>)}
       <div className="flex gap-3 sm:col-span-2"><button disabled={busy} className="rounded-lg bg-[#24578E] px-4 py-2 text-white disabled:opacity-60">{busy ? "Saving…" : "Save"}</button><button type="button" onClick={() => setEditing(null)} className="rounded-lg border px-4 py-2">Cancel</button></div>
     </form>}

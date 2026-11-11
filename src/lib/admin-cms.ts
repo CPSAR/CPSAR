@@ -2,7 +2,7 @@ export const cmsCollections = {
   programmes: {
     label: "Programmes",
     table: "programmes",
-    fields: ["title", "slug", "summary", "body", "image_url", "published"],
+    fields: ["title", "slug", "summary", "body", "gallery_images", "published"],
     required: ["title", "slug"],
   },
   events: {

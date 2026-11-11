@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CalendarDays, FileText } from "lucide-react";
 import { getPublishedContent, type PublicContentRecord } from "@/lib/public-content";
+import { getProgrammeImages } from "@/lib/programme-images";
 import { officialPartnerNames, partnerNameKey } from "@/lib/official-partners";
 
 function text(record: PublicContentRecord, key: string) {
@@ -86,7 +88,7 @@ export async function HomeCmsSections() {
 
       <section aria-labelledby="home-programmes-title" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading eyebrow="Learn and contribute" title="Programmes" id="home-programmes-title" href="/programs" linkText="All programmes" />
-        {programmes.length ? <div className="mt-8 grid gap-5 md:grid-cols-3">{programmes.slice(0, 3).map((programme) => <article key={programme.id} className={cardClass}><p className="text-xs font-semibold uppercase tracking-wider text-[#24578E]">CPSAR programme</p><h3 className="mt-3 text-xl font-bold leading-snug text-slate-950"><Link className={focusLinkClass} href={`/programs/${text(programme, "slug")}`}>{text(programme, "title")}</Link></h3><p className="mt-3 text-sm leading-6 text-slate-600">{text(programme, "summary")}</p><Link href={`/programs/${text(programme, "slug")}`} className={`${focusLinkClass} mt-5 inline-flex items-center gap-2 text-sm`}>Learn more <ArrowRight aria-hidden="true" className="size-4" /></Link></article>)}</div> : <EmptyState text="Programme details will appear here when published." href="/programs" linkText="Explore programmes" />}
+        {programmes.length ? <div className="mt-8 grid gap-5 md:grid-cols-3">{programmes.slice(0, 3).map((programme) => { const images = getProgrammeImages(programme); return <article key={programme.id} className={`${cardClass} overflow-hidden p-0`}>{images[0] && <Link href={`/programs/${text(programme, "slug")}`} aria-label={`View ${text(programme, "title")}`}><Image src={images[0]} alt={text(programme, "title")} width={900} height={600} unoptimized className="h-52 w-full object-cover" /></Link>}<div className="p-6"><p className="text-xs font-semibold uppercase tracking-wider text-[#24578E]">CPSAR programme</p><h3 className="mt-3 text-xl font-bold leading-snug text-slate-950"><Link className={focusLinkClass} href={`/programs/${text(programme, "slug")}`}>{text(programme, "title")}</Link></h3><p className="mt-3 text-sm leading-6 text-slate-600">{text(programme, "summary")}</p><Link href={`/programs/${text(programme, "slug")}`} className={`${focusLinkClass} mt-5 inline-flex items-center gap-2 text-sm`}>Learn more <ArrowRight aria-hidden="true" className="size-4" /></Link></div></article>; })}</div> : <EmptyState text="Programme details will appear here when published." href="/programs" linkText="Explore programmes" />}
       </section>
 
       <section aria-labelledby="home-events-title" className="bg-[#f4f8fb] py-16 sm:py-20">
