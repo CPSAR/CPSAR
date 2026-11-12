@@ -26,7 +26,7 @@ const photoStrip = [
 
 export function HeroSection() {
   return (
-    <section className="relative isolate flex min-h-[660px] flex-col overflow-hidden bg-[var(--cpsar-navy)] text-white sm:min-h-[700px] lg:min-h-[min(760px,calc(100svh-116px))]">
+    <section className="relative isolate flex min-h-[660px] flex-col overflow-hidden bg-[var(--cpsar-navy)] text-white sm:min-h-[700px] lg:min-h-[min(820px,calc(100svh-68px))]">
       <HeroBackgroundSlideshow />
 
       {/* A deep blue veil protects text contrast while preserving the photo. */}

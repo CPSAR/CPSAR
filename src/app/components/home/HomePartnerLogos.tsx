@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getPublishedContent, type PublicContentRecord } from "@/lib/public-content";
+import { PartnerLogoGrid } from "./PartnerLogoGrid";
 
 function text(record: PublicContentRecord, field: string) {
   return typeof record[field] === "string" ? record[field] as string : "";
@@ -29,32 +29,12 @@ export async function HomePartnerLogos() {
           </Link>
         </div>
 
-        <ul className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {visiblePartners.map((partner) => {
-            const name = text(partner, "name");
-            const logo = text(partner, "logo_url");
-            const website = text(partner, "website");
-            const content = logo ? (
-              <span className="flex h-20 items-center justify-center rounded-xl bg-white px-5 py-3 sm:h-24">
-                <Image src={logo} alt={`${name} logo`} width={220} height={100} unoptimized className="max-h-16 w-auto max-w-full object-contain" />
-              </span>
-            ) : (
-              <span className="flex min-h-20 items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center text-sm font-semibold leading-5 text-white sm:min-h-24 sm:text-base">
-                {name}
-              </span>
-            );
-
-            return (
-              <li key={partner.id}>
-                {website ? (
-                  <a href={website} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${name} website`} className="block rounded-xl outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
-                    {content}
-                  </a>
-                ) : content}
-              </li>
-            );
-          })}
-        </ul>
+        <PartnerLogoGrid partners={visiblePartners.map((partner) => ({
+          id: partner.id,
+          name: text(partner, "name"),
+          logo: text(partner, "logo_url"),
+          website: text(partner, "website"),
+        }))} />
       </div>
     </section>
   );

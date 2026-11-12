@@ -1,22 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { FocusEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Menu,
-  X,
   ChevronDown,
-  Instagram,
-  Twitter,
   Facebook,
+  Instagram,
   Linkedin,
+  Menu,
   Search,
+  Twitter,
+  X,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-const navLinks = [
+type NavLink = {
+  name: string;
+  path: string;
+  children?: { name: string; path: string }[];
+};
+
+const navLinks: NavLink[] = [
   { name: "Home", path: "/" },
   {
     name: "About Us",
@@ -54,56 +61,127 @@ const socialLinks = [
   { label: "LinkedIn", href: "https://www.linkedin.com/company/cpsarwanda", icon: Linkedin },
 ];
 
+const menuId = (name: string) =>
+  `submenu-${name.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}`;
+
+function SearchToggle({ variant = "light", inline = false }: { variant?: "light" | "dark"; inline?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const dark = variant === "dark";
+
+  return (
+    <div className={inline ? "w-full" : "relative"}>
+      <button
+        type="button"
+        aria-label={open ? "Close search" : "Open website search"}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={`inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 ${dark ? "text-[#CFE8F7] hover:bg-white/10 hover:text-white focus-visible:outline-[#5BC0DE]" : "text-[#24578E] hover:bg-[#edf6fb] hover:text-[#14365F] focus-visible:outline-[#24578E]"} ${inline ? "w-full justify-start rounded-lg" : "justify-center"}`}
+      >
+        <Search aria-hidden="true" className="size-5 shrink-0" />
+        {inline && "Search"}
+      </button>
+      {open && (
+        <form action="/search" role="search" className={`${inline ? "mt-2" : "absolute right-0 top-full z-30 mt-3 w-[min(22rem,calc(100vw-2rem))]"} flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-xl`}>
+          <label htmlFor={inline ? "mobile-site-search" : dark ? "top-site-search" : "site-search-nav"} className="sr-only">Search CPSAR</label>
+          <input
+            id={inline ? "mobile-site-search" : dark ? "top-site-search" : "site-search-nav"}
+            name="q"
+            type="search"
+            maxLength={100}
+            required
+            autoFocus
+            placeholder="What are you looking for?"
+            className="min-h-10 min-w-0 flex-1 rounded-lg px-3 text-sm text-slate-900 outline-none placeholder:text-slate-500 focus:ring-2 focus:ring-[#5BC0DE]/50"
+          />
+          <button type="submit" aria-label="Search" className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#14365F] text-white hover:bg-[#24578E] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14365F]">
+            <Search aria-hidden="true" className="size-4" />
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function isCurrentPath(pathname: string, path: string) {
+  return pathname === path || (path !== "/" && pathname.startsWith(`${path}/`));
+}
+
+function isCurrentLink(pathname: string, link: NavLink) {
+  return isCurrentPath(pathname, link.path) || Boolean(link.children?.some((child) => isCurrentPath(pathname, child.path)));
+}
+
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
+  const homeAtTop = pathname === "/" && !isScrolled;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsMobileOpen(false);
-        setActiveDropdown(null);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    const updateScrollState = () => setIsScrolled(window.scrollY > 24);
+    updateScrollState();
+    window.addEventListener("scroll", updateScrollState, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollState);
   }, []);
 
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileOpen]);
+
+  function closeDropdownOnBlur(event: FocusEvent<HTMLDivElement>) {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setActiveDropdown(null);
+    }
+  }
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
-      <div
-        className="hidden border-b border-white/10 bg-[#173a60] lg:block"
-      >
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-12">
-          <p className="text-xs text-white/80">
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div className={`${pathname === "/" ? "hidden" : "hidden min-[1200px]:block"} border-b border-white/10 bg-[#173a60]`}>
+        <div className="mx-auto flex h-11 max-w-[1440px] items-center justify-between px-5 sm:px-8">
+          <p className="text-[11px] font-medium tracking-[0.12em] text-white/80">
             CLINICAL PSYCHOLOGY STUDENTS ASSOCIATION OF RWANDA
           </p>
-          <div className="flex items-center gap-1" role="group" aria-label="CPSAR social media and search">
-            <Link href="/search" aria-label="Search CPSAR website" className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-full text-[#CFE8F7] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
-              <Search aria-hidden="true" className="size-[21px]" />
-            </Link>
+          <div className="flex items-center gap-0.5" role="group" aria-label="Search and social media">
+            <SearchToggle variant="dark" />
             {socialLinks.map(({ label, href, icon: Icon }) => (
-              <a key={label} href={href} aria-label={label} target="_blank" rel="noopener noreferrer" className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-full text-[#CFE8F7] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
-                <Icon className="size-[21px]" aria-hidden="true" />
+              <a
+                key={label}
+                href={href}
+                aria-label={label}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex size-11 items-center justify-center rounded-full text-[#CFE8F7] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]"
+              >
+                <Icon aria-hidden="true" className="size-[21px]" />
               </a>
             ))}
           </div>
         </div>
       </div>
-      {/* Main nav bar */}
-      <div className="relative border-b border-slate-200/90 bg-white/95 shadow-[0_8px_30px_rgba(16,43,75,0.08)] backdrop-blur-md before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-[#71C0DF]/70 before:to-transparent before:content-['']">
-        <nav className="max-w-7xl mx-auto px-5 sm:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-[68px]">
-            {/* Logo */}
+
+      <div className={`transition-[background-color,box-shadow,border-color] duration-200 ${homeAtTop ? "border-b border-white/15 bg-[linear-gradient(180deg,rgba(16,43,75,0.78)_0%,rgba(16,43,75,0.42)_66%,rgba(16,43,75,0)_100%)] shadow-none" : "border-b border-slate-200/90 bg-white/95 shadow-[0_8px_30px_rgba(16,43,75,0.08)] backdrop-blur-lg"}`}>
+        <nav aria-label="Main navigation" className="mx-auto max-w-[1440px] px-5 sm:px-8">
+          <div className="flex h-16 items-center justify-between min-[1200px]:h-[68px]">
             <Link
               href="/"
-              className="group flex shrink-0 items-center rounded-sm outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#24578E]"
+              className={`flex shrink-0 items-center rounded-md outline-offset-4 focus-visible:outline focus-visible:outline-2 ${homeAtTop ? "bg-white/95 px-2 py-1.5 shadow-md focus-visible:outline-white" : "focus-visible:outline-[#24578E]"}`}
               aria-label="CPSAR home"
             >
               <Image
@@ -112,141 +190,217 @@ export function Navigation() {
                 width={916}
                 height={210}
                 fetchPriority="high"
-                className="h-9 w-[148px] object-contain sm:h-10 sm:w-[168px] xl:h-11 xl:w-[190px]"
+                className="h-9 w-[148px] object-contain sm:h-10 sm:w-[168px] 2xl:h-11 2xl:w-[184px]"
               />
             </Link>
 
-            {/* Desktop nav */}
-            <div className="hidden min-w-0 flex-1 items-center justify-center gap-0 lg:flex">
-              {navLinks.map((link) => (
-                <div
-                  key={link.name}
-                  className="relative shrink-0"
-                  onMouseEnter={() => link.children && setActiveDropdown(link.name)}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                  onFocus={() => link.children && setActiveDropdown(link.name)}
-                  onBlur={(event) => {
-                    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActiveDropdown(null);
-                  }}
-                >
-                  <Link
-                    href={link.path}
-                    onClick={() => setActiveDropdown(null)}
-                    className={`relative flex min-h-11 items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-2 text-xs font-semibold uppercase tracking-[0.025em] transition-colors duration-150 after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-0.5 after:rounded-full after:bg-[var(--cpsar-navy)] after:transition-transform after:duration-200 after:content-[''] xl:px-2 xl:text-[13px] 2xl:px-2.5 2xl:text-sm ${
-                      (pathname === link.path || link.children?.some((child) => child.path === pathname))
-                        ? "text-[#14365F] after:scale-x-100"
-                        : "text-neutral-700 after:scale-x-0 hover:bg-[#f2f7fa] hover:text-[#173a60] hover:after:scale-x-100"
-                    }`}
-                    aria-expanded={link.children ? activeDropdown === link.name : undefined}
-                    aria-controls={link.children ? `submenu-${link.name.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}` : undefined}
-                  >
-                    {link.name}
-                    {link.children && <ChevronDown aria-hidden="true" className={`size-3 shrink-0 transition-transform duration-150 ${activeDropdown === link.name ? "rotate-180" : ""}`} />}
-                  </Link>
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 px-3 min-[1200px]:flex 2xl:gap-1">
+              {navLinks.map((link) => {
+                const active = isCurrentLink(pathname, link);
+                const open = activeDropdown === link.name;
 
-                  {link.children && (
-                    <AnimatePresence>
-                      {activeDropdown === link.name && (
-                        <motion.div
-                          initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={reduceMotion ? undefined : { opacity: 0, y: 6 }}
-                          transition={{ duration: reduceMotion ? 0 : 0.14 }}
-                          id={`submenu-${link.name.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}`}
-                          className="absolute left-0 top-full mt-1 w-60 overflow-hidden border border-black/6 bg-white py-1.5 shadow-lg"
-                        >
-                          {link.children.map((child) => (
-                            <Link
-                              key={child.name}
-                              href={child.path}
-                              onClick={() => setActiveDropdown(null)}
-                              className="relative block px-4 py-2.5 text-[13px] text-neutral-700 transition-colors hover:bg-[#f2f7fa] hover:text-[#173a60] after:absolute after:bottom-1 after:left-4 after:right-4 after:h-px after:origin-left after:scale-x-0 after:bg-[var(--cpsar-navy)] after:transition-transform after:content-[''] hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#24578E]"
-                            >
-                              {child.name}
-                            </Link>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  )}
-                </div>
-              ))}
+                return (
+                  <div
+                    key={link.name}
+                    className="relative shrink-0"
+                    onMouseEnter={() => link.children && setActiveDropdown(link.name)}
+                    onMouseLeave={() => link.children && setActiveDropdown(null)}
+                    onBlur={closeDropdownOnBlur}
+                  >
+                    {link.children ? (
+                      <button
+                        type="button"
+                        aria-haspopup="true"
+                        aria-expanded={open}
+                        aria-controls={menuId(link.name)}
+                        aria-current={active ? "page" : undefined}
+                        onFocus={() => setActiveDropdown(link.name)}
+                        onClick={() => setActiveDropdown(open ? null : link.name)}
+                        className={`group relative flex min-h-11 items-center gap-1 whitespace-nowrap rounded-md px-2 py-2 text-[12px] font-semibold uppercase tracking-[0.025em] transition-colors after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:transition-transform after:content-[''] 2xl:px-2.5 2xl:text-[13px] ${homeAtTop ? "after:bg-[#5BC0DE] focus-visible:outline-white" : "after:bg-[#14365F] focus-visible:outline-[#24578E]"} ${
+                          active
+                            ? homeAtTop ? "text-white after:scale-x-100" : "text-[#14365F] after:scale-x-100"
+                            : homeAtTop ? "text-white/90 after:scale-x-0 hover:bg-white/10 hover:text-white hover:after:scale-x-100" : "text-slate-700 after:scale-x-0 hover:bg-[#f2f7fa] hover:text-[#173a60] hover:after:scale-x-100"
+                        } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
+                      >
+                        {link.name}
+                        <ChevronDown aria-hidden="true" className={`size-3.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+                      </button>
+                    ) : (
+                      <Link
+                        href={link.path}
+                        aria-current={active ? "page" : undefined}
+                        className={`relative flex min-h-11 items-center whitespace-nowrap rounded-md px-2 py-2 text-[12px] font-semibold uppercase tracking-[0.025em] transition-colors after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:transition-transform after:content-[''] 2xl:px-2.5 2xl:text-[13px] ${homeAtTop ? "after:bg-[#5BC0DE] focus-visible:outline-white" : "after:bg-[#14365F] focus-visible:outline-[#24578E]"} ${
+                          active
+                            ? homeAtTop ? "text-white after:scale-x-100" : "text-[#14365F] after:scale-x-100"
+                            : homeAtTop ? "text-white/90 after:scale-x-0 hover:bg-white/10 hover:text-white hover:after:scale-x-100" : "text-slate-700 after:scale-x-0 hover:bg-[#f2f7fa] hover:text-[#173a60] hover:after:scale-x-100"
+                        } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
+                      >
+                        {link.name}
+                      </Link>
+                    )}
+
+                    {link.children && (
+                      <AnimatePresence>
+                        {open && (
+                          <motion.div
+                            id={menuId(link.name)}
+                            initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={reduceMotion ? undefined : { opacity: 0, y: 6 }}
+                            transition={{ duration: reduceMotion ? 0 : 0.14 }}
+                            className="absolute left-0 top-full z-10 mt-1 w-64 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_45px_rgba(16,43,75,0.16)]"
+                          >
+                            {link.children.map((child) => {
+                              const childActive = isCurrentPath(pathname, child.path);
+                              return (
+                                <Link
+                                  key={child.name}
+                                  href={child.path}
+                                  aria-current={childActive ? "page" : undefined}
+                                  onClick={() => setActiveDropdown(null)}
+                                  className={`block rounded-lg px-3.5 py-3 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#24578E] ${
+                                    childActive
+                                      ? "bg-[#edf6fb] font-semibold text-[#14365F]"
+                                      : "text-slate-700 hover:bg-[#f2f7fa] hover:text-[#173a60]"
+                                  }`}
+                                >
+                                  {child.name}
+                                </Link>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Right CTAs */}
-            <div className="hidden shrink-0 items-center gap-1 lg:flex xl:gap-2">
+            {pathname === "/" && (
+              <div className="hidden shrink-0 items-center gap-0.5 min-[1200px]:flex" role="group" aria-label="Search and social media">
+                <SearchToggle variant={homeAtTop ? "dark" : "light"} />
+                {socialLinks.map(({ label, href, icon: Icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    aria-label={label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex size-10 items-center justify-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 2xl:size-11 ${homeAtTop ? "text-white hover:bg-white/15 hover:text-white focus-visible:outline-white" : "text-[#24578E] hover:bg-[#edf6fb] hover:text-[#14365F] focus-visible:outline-[#24578E]"}`}
+                  >
+                    <Icon aria-hidden="true" className="size-5" />
+                  </a>
+                ))}
+              </div>
+            )}
+
+            <div className="hidden shrink-0 items-center min-[1200px]:flex">
               <Link
                 href="/donate"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#71C0DF] px-5 py-2 text-xs font-bold text-[#102b4b] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-[#9be0f5] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24578E] motion-reduce:transform-none motion-reduce:transition-none"
-                style={{ fontFamily: "var(--font-display)" }}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#5BC0DE] px-5 text-sm font-bold text-[#102b4b] transition duration-200 hover:-translate-y-0.5 hover:bg-[#8edcf2] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24578E] motion-reduce:transform-none motion-reduce:transition-none"
               >
                 Donate
               </Link>
             </div>
 
-            {/* Mobile toggle */}
             <button
-              onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="rounded-lg p-2 text-[#173a60] transition-colors hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14365F] lg:hidden"
+              type="button"
+              onClick={() => setIsMobileOpen((open) => !open)}
+              className={`inline-flex size-11 items-center justify-center rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 min-[1200px]:hidden ${homeAtTop ? "bg-[#102b4b]/35 text-white hover:bg-[#102b4b]/60 focus-visible:outline-white" : "text-[#173a60] hover:bg-[#f2f7fa] focus-visible:outline-[#14365F]"}`}
               aria-label={isMobileOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={isMobileOpen}
               aria-controls="mobile-navigation"
-              type="button"
             >
-              {isMobileOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
+              {isMobileOpen ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
             </button>
           </div>
         </nav>
       </div>
 
-            {/* Mobile menu */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={reduceMotion ? false : { opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
             transition={{ duration: reduceMotion ? 0 : 0.2 }}
-            id="mobile-navigation"
-            className="lg:hidden overflow-hidden border-b border-slate-200 bg-white shadow-lg"
+            className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-slate-200 bg-white shadow-xl min-[1200px]:hidden"
           >
-            <div className="py-4 px-5 space-y-0.5">
-              {navLinks.map((link) => link.children ? (
-                <details key={link.name} className="group border-b border-neutral-100 last:border-0">
-                  <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-3 text-sm font-semibold text-neutral-800 hover:bg-neutral-50 [&::-webkit-details-marker]:hidden">
-                    {link.name}<ChevronDown aria-hidden="true" className="h-4 w-4 text-neutral-500 transition-transform group-open:rotate-180" />
-                  </summary>
-                  <div className="pb-2 pl-3">
-                    {link.children.map((child) => (
-                      <Link key={`${link.name}-${child.name}`} href={child.path} onClick={() => setIsMobileOpen(false)} className={`block rounded-md px-3 py-2.5 text-sm transition-colors ${pathname === child.path ? "bg-[#e8f3fb] font-semibold text-[#173a60]" : "text-neutral-600 hover:bg-neutral-50 hover:text-[#173a60]"}`}>
-                        {child.name}
-                      </Link>
-                    ))}
-                  </div>
-                </details>
-              ) : (
-                <Link key={link.name} href={link.path} onClick={() => setIsMobileOpen(false)} className={`block rounded-md px-3 py-3 text-sm font-semibold transition-colors ${pathname === link.path ? "bg-[#e8f3fb] text-[#173a60]" : "text-neutral-800 hover:bg-neutral-50"}`}>
-                  {link.name}
-                </Link>
-              ))}
-              <div className="pt-3 border-t border-neutral-100 space-y-2 mt-2">
-                <Link href="/search" onClick={() => setIsMobileOpen(false)} className="flex min-h-11 items-center gap-2 rounded-md px-3 py-3 text-sm font-semibold text-[#173a60] hover:bg-neutral-50">
-                  <Search aria-hidden="true" className="size-4" /> Search
-                </Link>
+            <nav aria-label="Mobile navigation" className="mx-auto max-w-2xl px-5 py-3 sm:px-8">
+              <Link
+                href="/"
+                onClick={() => setIsMobileOpen(false)}
+                aria-current={pathname === "/" ? "page" : undefined}
+                className={`block rounded-lg px-3 py-3 text-sm font-semibold ${pathname === "/" ? "bg-[#edf6fb] text-[#14365F]" : "text-slate-800 hover:bg-slate-50"}`}
+              >
+                Home
+              </Link>
+
+              {navLinks.filter((link) => link.path !== "/").map((link) => {
+                const active = isCurrentLink(pathname, link);
+                return link.children ? (
+                  <details key={link.name} className="group border-b border-slate-100" open={active || undefined}>
+                    <summary className={`flex min-h-12 cursor-pointer list-none items-center justify-between rounded-lg px-3 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden ${active ? "text-[#14365F]" : "text-slate-800 hover:bg-slate-50"}`}>
+                      {link.name}
+                      <ChevronDown aria-hidden="true" className="size-4 text-slate-500 transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="space-y-1 pb-2 pl-3">
+                      {link.children.map((child) => {
+                        const childActive = isCurrentPath(pathname, child.path);
+                        return (
+                          <Link
+                            key={`${link.name}-${child.name}`}
+                            href={child.path}
+                            aria-current={childActive ? "page" : undefined}
+                            onClick={() => setIsMobileOpen(false)}
+                            className={`block min-h-11 rounded-lg px-3 py-3 text-sm ${childActive ? "bg-[#edf6fb] font-semibold text-[#14365F]" : "text-slate-600 hover:bg-slate-50 hover:text-[#14365F]"}`}
+                          >
+                            {child.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </details>
+                ) : (
+                  <Link
+                    key={link.name}
+                    href={link.path}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setIsMobileOpen(false)}
+                    className={`block min-h-12 rounded-lg px-3 py-3 text-sm font-semibold ${active ? "bg-[#edf6fb] text-[#14365F]" : "text-slate-800 hover:bg-slate-50"}`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
+
+              <div className="mt-3 border-t border-slate-200 pt-3">
+                <SearchToggle inline />
+                <div className="flex flex-wrap items-center gap-1 px-1 py-2" role="group" aria-label="CPSAR social media">
+                  {socialLinks.map(({ label, href, icon: Icon }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      aria-label={label}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex size-11 items-center justify-center rounded-full text-[#24578E] transition-colors hover:bg-[#edf6fb] hover:text-[#14365F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#24578E]"
+                    >
+                      <Icon aria-hidden="true" className="size-5" />
+                    </a>
+                  ))}
+                </div>
                 <Link
                   href="/donate"
                   onClick={() => setIsMobileOpen(false)}
-                  className="block px-3 py-3 text-sm font-semibold text-white bg-[#71C0DF] text-center"
-                  style={{ fontFamily: "var(--font-display)" }}
+                  className="mt-2 flex min-h-11 items-center justify-center rounded-full bg-[#5BC0DE] px-4 text-sm font-bold text-[#102b4b] transition-colors hover:bg-[#8edcf2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24578E]"
                 >
                   Donate
                 </Link>
               </div>
-            </div>
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>
