@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useEffect } from "react";
 import { Activity, ArrowDown, ArrowLeft, ArrowRight, ClipboardList, HeartHandshake, RotateCcw, ShieldCheck, Wine } from "lucide-react";
 
 type AnswerOption = { label: string; value: number };
@@ -135,6 +136,7 @@ const cards = [
 ];
 
 export default function ScreeningAssessments() {
+  const resultRef = useRef<HTMLElement>(null);
   const [activeId, setActiveId] = useState<Assessment["id"] | null>(null);
   const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [difficulty, setDifficulty] = useState<string | null>(null);
@@ -145,6 +147,11 @@ export default function ScreeningAssessments() {
   const result = active && complete ? active.result(score) : null;
   const phqSafetyFlag = active?.id === "phq9" && complete && currentAnswers[8] > 0;
   const progress = active ? Math.round((currentAnswers.filter((value) => Number.isInteger(value)).length / active.questions.length) * 100) : 0;
+
+  useEffect(() => {
+    if (!complete) return;
+    resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [complete, activeId]);
 
   function start(id: Assessment["id"]) {
     setActiveId(id);
@@ -229,7 +236,7 @@ export default function ScreeningAssessments() {
               </fieldset>)}
               {active.id === "phq9" && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Please take question 9 seriously.</strong> Any answer other than “Not at all” will show a reminder to seek support. If you feel in immediate danger, contact local emergency services or go to the nearest emergency department.</div>}
               {active.id === "phq9" && <fieldset className="rounded-2xl border border-slate-200 p-4 sm:p-5"><legend className="px-1 text-sm font-semibold leading-6 text-slate-800 sm:text-base">How difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?</legend><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{["Not difficult at all", "Somewhat difficult", "Very difficult", "Extremely difficult"].map((option) => <label key={option} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-[#2877a7] ${difficulty === option ? "border-[#2877a7] bg-sky-50 text-[#14365F]" : "border-slate-200 text-slate-700 hover:border-sky-300"}`}><input type="radio" name="phq9-difficulty" value={option} checked={difficulty === option} onChange={() => setDifficulty(option)} className="h-4 w-4 accent-[#1c6795]" /><span>{option}</span></label>)}</div><p className="mt-2 text-xs text-slate-500">This additional question is not included in the PHQ-9 total score.</p></fieldset>}
-            </div> : <section aria-live="polite" className="mt-7 rounded-3xl border border-slate-200 bg-gradient-to-br from-[#f5faff] via-white to-[#eff9fc] p-5 sm:p-8">
+            </div> : <section ref={resultRef} aria-live="polite" className="mt-7 rounded-3xl border border-slate-200 bg-gradient-to-br from-[#f5faff] via-white to-[#eff9fc] p-5 sm:p-8">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
                 <div className="grid h-32 w-32 shrink-0 place-items-center rounded-full border-[10px] border-sky-100 bg-white shadow-inner sm:h-40 sm:w-40"><div className="text-center"><p className="text-4xl font-bold tracking-tight text-[#14365F]">{score}</p><p className="text-xs font-semibold text-slate-500">out of {active.id === "gad7" ? 21 : active.id === "phq9" ? 27 : 40}</p></div></div>
                 <div className="flex-1"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2877a7]">Your screening result</p><h4 className="mt-2 text-2xl font-bold text-[#14365F]">{result?.label}</h4><p className="mt-2 max-w-2xl leading-7 text-slate-600">{result?.detail}</p><div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-500"><span className="rounded-full bg-white px-3 py-1.5">{active.shortName}</span><span className="rounded-full bg-white px-3 py-1.5">Responses stay on this device</span></div></div>
