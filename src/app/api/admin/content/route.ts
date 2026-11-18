@@ -27,7 +27,9 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
     }
     if (field === "display_order" || field === "graduation_year") {
       if (value === "" || value === null) {
-        output[field] = null;
+        // Leadership, partner, and testimonial display_order columns are NOT NULL.
+        // Graduation year is optional, so it remains nullable.
+        output[field] = field === "display_order" ? 0 : null;
       } else {
         const number = typeof value === "number" ? value : Number(value);
         if (!Number.isInteger(number) || number < 0 || number > 9999) return { error: `${field} must be a valid whole number.` };
