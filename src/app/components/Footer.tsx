@@ -180,10 +180,14 @@ export function Footer() {
             © {new Date().getFullYear()} CPSAR — Clinical Psychology Students Association of Rwanda
           </p>
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 md:justify-end">
-            {["Privacy Policy", "Terms of Service", "Accessibility"].map((l) => (
-              <a key={l} href="#" className="text-xs text-white/65 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
-                {l}
-              </a>
+            {[
+              { label: "Privacy Policy", href: "/privacy" },
+              { label: "Terms of Service", href: "/terms" },
+              { label: "Accessibility", href: "/accessibility" },
+            ].map((item) => (
+              <Link key={item.href} href={item.href} className="text-xs text-white/65 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5BC0DE]">
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>
