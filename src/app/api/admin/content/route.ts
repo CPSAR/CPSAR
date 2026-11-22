@@ -61,6 +61,13 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
     if (typeof output[field] !== "string" || !output[field]) return { error: `${field} is required.` };
   }
 
+  if (collection === "programmes") {
+    // These columns have database defaults and are optional in the Admin form.
+    // An edit that omits them should leave the existing values unchanged.
+    if (!("summary" in output)) delete output.summary;
+    if (!("body" in output)) delete output.body;
+  }
+
   if (collection === "articles" && output.published === true && !output.published_at) {
     output.published_at = new Date().toISOString();
   }
@@ -116,7 +123,10 @@ export async function POST(request: Request) {
   const normalized = normalizeRecord(collection, parsed.value.data as Record<string, unknown>);
   if ("error" in normalized) return NextResponse.json({ error: normalized.error }, { status: 400 });
   const { data, error } = await auth.session.client.from(cmsCollections[collection].table).insert(normalized.data).select("*").single();
-  if (error) return NextResponse.json({ error: error.code === "23505" ? "That slug is already in use." : "Could not save this item." }, { status: 400 });
+  if (error) {
+    console.error("Admin content insert failed", { collection, code: error.code, message: error.message });
+    return NextResponse.json({ error: error.code === "23505" ? "That slug is already in use." : `Could not save this item${error.code ? ` (${error.code})` : ""}. Check that the latest CMS database migration has been applied.` }, { status: 400 });
+  }
   revalidateCollection(collection);
   return NextResponse.json({ item: data }, { status: 201 });
 }
@@ -134,7 +144,10 @@ export async function PATCH(request: Request) {
   const normalized = normalizeRecord(collection, parsed.value.data as Record<string, unknown>);
   if ("error" in normalized) return NextResponse.json({ error: normalized.error }, { status: 400 });
   const { data, error } = await auth.session.client.from(cmsCollections[collection].table).update(normalized.data).eq("id", id).select("*").single();
-  if (error) return NextResponse.json({ error: error.code === "23505" ? "That slug is already in use." : "Could not update this item." }, { status: 400 });
+  if (error) {
+    console.error("Admin content update failed", { collection, code: error.code, message: error.message });
+    return NextResponse.json({ error: error.code === "23505" ? "That slug is already in use." : `Could not update this item${error.code ? ` (${error.code})` : ""}. Check that the latest CMS database migration has been applied.` }, { status: 400 });
+  }
   revalidateCollection(collection);
   return NextResponse.json({ item: data });
 }
