@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ArrowRight, BookOpenText, CalendarDays, Handshake, UsersRound } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
 
 const pathways = [
   {
@@ -58,8 +57,6 @@ const cardTones = [
 ];
 
 export function AudiencePaths() {
-  const reduceMotion = useReducedMotion();
-
   return (
     <section aria-labelledby="home-paths-title" className="relative overflow-hidden bg-[#14365F] py-12 sm:py-16 lg:py-20">
       <div aria-hidden="true" className="absolute -right-28 -top-40 size-[28rem] rounded-full border border-white/[0.08]" />
@@ -78,13 +75,8 @@ export function AudiencePaths() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:gap-5">
           {pathways.map(({ number, icon: Icon, title, description, links }, index) => (
-            <motion.article
+            <article
               key={number}
-              initial={reduceMotion ? false : { opacity: 0, y: 38, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              whileHover={reduceMotion ? undefined : { y: -7, boxShadow: "0 22px 48px rgba(4, 25, 48, 0.3)" }}
-              whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-              transition={{ duration: reduceMotion ? 0 : 0.72, delay: reduceMotion ? 0 : 0.12 + index * 0.14, ease: [0.22, 1, 0.36, 1] }}
               className={`group relative flex min-h-[23rem] flex-col overflow-hidden rounded-[1.4rem] border p-5 shadow-[0_8px_30px_rgba(18,44,75,0.08)] sm:p-7 lg:p-4 xl:min-h-[27rem] xl:p-8 ${cardTones[index]}`}
             >
               <span aria-hidden="true" className="pointer-events-none absolute -right-20 -top-20 size-48 rounded-full bg-[#5BC0DE]/10 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100 motion-reduce:transition-none" />
@@ -105,7 +97,7 @@ export function AudiencePaths() {
                   </li>
                 ))}
               </ul>
-            </motion.article>
+            </article>
           ))}
         </div>
 

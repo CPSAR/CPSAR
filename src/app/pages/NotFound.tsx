@@ -6,7 +6,7 @@ import { ArrowRight, Home } from "lucide-react";
 
 export function NotFound() {
   return (
-    <div className="min-h-screen bg-[#24578E] flex flex-col items-center justify-center px-5 text-center">
+    <main className="min-h-screen bg-[#24578E] flex flex-col items-center justify-center px-5 text-center">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -33,7 +33,7 @@ export function NotFound() {
           Page not found.
         </h2>
         <p className="text-white/30 text-sm leading-relaxed max-w-sm mb-12">
-          The page you're looking for doesn't exist or has been moved. Let's get you back on track.
+          The page you&apos;re looking for doesn&apos;t exist or has been moved. Let&apos;s get you back on track.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
@@ -71,6 +71,6 @@ export function NotFound() {
           404
         </span>
       </div>
-    </div>
+    </main>
   );
 }

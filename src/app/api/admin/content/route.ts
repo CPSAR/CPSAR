@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getAdminSession, isSameOrigin, isSafeReadOrigin } from "@/lib/admin-auth";
 import { cmsCollections, isCmsCollection } from "@/lib/admin-cms";
 import { readJsonObject } from "@/lib/read-json-object";
+import { safePublicUrl } from "@/lib/safe-public-url";
 
 export const runtime = "nodejs";
 
@@ -14,10 +15,10 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
     if (!(field in input)) continue;
     const value = input[field];
     if (field === "gallery_images" && (collection === "programmes" || collection === "events")) {
-      if (!Array.isArray(value) || value.length > 24 || value.some((image) => typeof image !== "string" || image.length > 2048 || (image.startsWith("/") ? image.startsWith("//") : !/^https:\/\//i.test(image)))) {
+      if (!Array.isArray(value) || value.length > 24 || value.some((image) => typeof image !== "string" || image.length > 2048 || !safePublicUrl(image))) {
         return { error: "The photo gallery must contain up to 24 valid HTTPS image URLs or local paths." };
       }
-      output[field] = value;
+      output[field] = value.map((image) => safePublicUrl(image as string));
       continue;
     }
     if (field === "published" || field === "featured") {
@@ -48,8 +49,11 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
     if (["starts_at", "ends_at", "published_at"].includes(field) && text && Number.isNaN(Date.parse(text))) {
       return { error: `${field} must be a valid date and time.` };
     }
-    if (["website", "image_url", "logo_url", "resource_url"].includes(field) && text && !text.startsWith("/") && !/^https:\/\//i.test(text)) {
-      return { error: `${field} must be an HTTPS URL or a path beginning with /.` };
+    if (["website", "image_url", "logo_url", "resource_url"].includes(field) && text) {
+      const safeUrl = safePublicUrl(text);
+      if (!safeUrl) return { error: `${field} must be an HTTPS URL or a same-site path.` };
+      output[field] = safeUrl;
+      continue;
     }
     if (field === "slug" && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(text)) {
       return { error: "Slug must use lowercase letters, numbers, and hyphens." };

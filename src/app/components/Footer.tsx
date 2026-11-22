@@ -26,7 +26,7 @@ const links = {
   Contact: [
     { label: "Get in Touch", path: "/contact" },
     { label: "Join CPSAR", path: "/membership" },
-    { label: "www.cpsarwanda.org", path: "https://www.cpsarwanda.org" },
+  
     { label: "+250 791 507 709", path: "tel:+250791507709" },
     { label: "Kigali, Rwanda", path: "/contact" },
   ],
@@ -34,7 +34,7 @@ const links = {
 
 const socials = [
   { icon: Twitter, href: "https://x.com/cpsarwanda", label: "X / Twitter" },
-  { icon: Instagram, href: "https://instagram.com/cpsa_rwanda", label: "Instagram" },
+  { icon: Instagram, href: "https://instagram.com/cpsar_rwanda", label: "Instagram" },
   { icon: Facebook, href: "https://www.facebook.com/cpsarwanda", label: "Facebook" },
   { icon: Linkedin, href: "https://www.linkedin.com/company/cpsarwanda", label: "LinkedIn" },
 ];

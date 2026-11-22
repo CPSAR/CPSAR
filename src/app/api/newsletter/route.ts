@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { readJsonObject } from "@/lib/read-json-object";
+import { checkPublicRateLimit } from "@/lib/public-rate-limit";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,10 @@ function isSameOrigin(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const rateLimit = checkPublicRateLimit(request, "newsletter", 4, 60 * 60 * 1000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: "Too many sign-up attempts. Please try again later." }, { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } });
+  }
   if (!isSameOrigin(request)) {
     return NextResponse.json({ error: "Request not allowed." }, { status: 403 });
   }

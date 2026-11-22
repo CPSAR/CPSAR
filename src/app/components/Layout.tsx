@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Navigation } from "./Navigation";
 import { Footer } from "./Footer";
 import { BackToTop } from "./BackToTop";
+import { PublicScrollReveals } from "./PublicScrollReveals";
 
 function ScrollProgress() {
   const [progress, setProgress] = useState(0);
@@ -34,7 +35,7 @@ function ScrollProgress() {
 export function Layout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
-  const desktopHeaderOverlapRoutes = ["/about", "/leadership", "/membership", "/programs", "/events", "/resources", "/partners", "/gallery", "/news", "/search", "/alumni", "/contact", "/donate"];
+  const desktopHeaderOverlapRoutes = ["/about", "/leadership", "/membership", "/programs", "/events", "/resources", "/partners", "/gallery", "/news", "/search", "/alumni", "/contact", "/donate", "/privacy", "/terms", "/accessibility"];
   const needsDesktopHeaderOffset = desktopHeaderOverlapRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
   useEffect(() => {
@@ -53,8 +54,9 @@ export function Layout({ children }: { children: ReactNode }) {
         Skip to main content
       </a>
       <Navigation />
+      <PublicScrollReveals />
       <AnimatePresence mode="wait" initial={false}>
-        <motion.main
+        <motion.div
           key={pathname}
           id="maincontent"
           tabIndex={-1}
@@ -65,7 +67,7 @@ export function Layout({ children }: { children: ReactNode }) {
           transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
         >
           {children}
-        </motion.main>
+        </motion.div>
       </AnimatePresence>
       <Footer />
       <BackToTop />

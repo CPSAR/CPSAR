@@ -4,10 +4,10 @@ import { HomePartnerLogos } from "../components/home/HomePartnerLogos";
 
 export function HomePage() {
   return (
-    <div>
+    <main>
       <HeroSection />
       <AudiencePaths />
       <HomePartnerLogos />
-    </div>
+    </main>
   );
 }
