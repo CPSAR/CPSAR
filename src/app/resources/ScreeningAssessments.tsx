@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useEffect } from "react";
-import { Activity, AlertTriangle, ArrowDown, ArrowLeft, ArrowRight, ClipboardList, ExternalLink, HeartHandshake, Mail, Phone, RotateCcw, ShieldCheck, Wine } from "lucide-react";
+import { Activity, AlertTriangle, ArrowDown, ArrowLeft, ArrowRight, Check, ClipboardList, ExternalLink, HeartHandshake, Mail, Phone, RotateCcw, ShieldCheck, Wine } from "lucide-react";
 
 type AnswerOption = { label: string; value: number };
 type Assessment = {
@@ -140,9 +140,14 @@ export default function ScreeningAssessments() {
   const [activeId, setActiveId] = useState<Assessment["id"] | null>(null);
   const [answers, setAnswers] = useState<Record<string, number[]>>({});
   const [difficulty, setDifficulty] = useState<string | null>(null);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
   const active = assessments.find(({ id }) => id === activeId) ?? null;
   const currentAnswers = active ? answers[active.id] ?? EMPTY_ANSWERS : EMPTY_ANSWERS;
-  const complete = active ? currentAnswers.filter((value) => Number.isInteger(value)).length === active.questions.length : false;
+  const complete = Boolean(active && submitted);
+  const stepCount = active ? active.questions.length + (active.id === "phq9" ? 1 : 0) : 0;
+  const isImpactStep = active?.id === "phq9" && questionIndex === active.questions.length;
+  const hasCurrentAnswer = Boolean(active && (isImpactStep || Number.isInteger(currentAnswers[questionIndex])));
   const score = useMemo(() => currentAnswers.reduce((sum, value) => sum + value, 0), [currentAnswers]);
   const result = active && complete ? active.result(score) : null;
   const phqSafetyFlag = active?.id === "phq9" && complete && currentAnswers[8] > 0;
@@ -151,7 +156,7 @@ export default function ScreeningAssessments() {
     (active.id === "phq9" && (score >= 15 || currentAnswers[8] > 0)) ||
     (active.id === "audit" && score >= 14)
   ));
-  const progress = active ? Math.round((currentAnswers.filter((value) => Number.isInteger(value)).length / active.questions.length) * 100) : 0;
+  const progress = active ? Math.round(((complete ? stepCount : questionIndex + 1) / stepCount) * 100) : 0;
 
   useEffect(() => {
     if (!complete) return;
@@ -162,6 +167,8 @@ export default function ScreeningAssessments() {
     setActiveId(id);
     setAnswers((previous) => ({ ...previous, [id]: [] }));
     setDifficulty(null);
+    setQuestionIndex(0);
+    setSubmitted(false);
   }
 
   function setAnswer(questionIndex: number, value: number) {
@@ -177,6 +184,8 @@ export default function ScreeningAssessments() {
     if (!active) return;
     setAnswers((previous) => ({ ...previous, [active.id]: [] }));
     setDifficulty(null);
+    setQuestionIndex(0);
+    setSubmitted(false);
   }
 
   return (
@@ -223,24 +232,24 @@ export default function ScreeningAssessments() {
               <button type="button" onClick={() => setActiveId(null)} className="inline-flex min-h-11 items-center gap-2 rounded-lg pr-3 font-semibold text-slate-600 hover:text-[#14365F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c6795]"><ArrowLeft size={17} aria-hidden="true" />All check-ins</button>
               <span className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold tracking-wide text-[#1c6795]">{active.shortName}</span>
             </div>
-            <div className="mt-4 flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm font-semibold text-[#2877a7]">{active.timeframe}</p><h3 className="mt-1 text-2xl font-bold text-[#14365F]">{active.name}</h3></div><p className="text-sm font-semibold text-slate-500">{complete ? "Complete" : `${currentAnswers.filter((value) => Number.isInteger(value)).length} of ${active.questions.length}`}</p></div>
+            <div className="mt-4 flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm font-semibold text-[#2877a7]">{active.timeframe}</p><h3 className="mt-1 text-2xl font-bold text-[#14365F]">{active.name}</h3></div><p className="text-sm font-semibold text-slate-500">{complete ? "Complete" : `Question ${questionIndex + 1} of ${stepCount}`}</p></div>
             <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Questionnaire progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={complete ? 100 : progress}><div className="h-full rounded-full bg-gradient-to-r from-[#2877a7] to-[#5BC0DE] transition-all duration-500" style={{ width: `${complete ? 100 : progress}%` }} /></div>
 
-            {!complete ? <div className="mt-7 space-y-4">
-              {active.questions.map((question, index) => <fieldset key={`${active.id}-${index}`} className="rounded-2xl border border-slate-200 p-4 sm:p-5">
-                <legend className="max-w-full px-1 text-sm font-semibold leading-6 text-slate-800 sm:text-base"><span className="mr-2 inline-grid h-7 min-w-7 place-items-center rounded-full bg-[#14365F] px-2 text-xs font-bold text-white">{index + 1}</span>{question}</legend>
-                <div className={`mt-4 grid gap-2 ${active.id === "audit" ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-4"}`}>
-                  {active.options[index].map((option) => {
-                    const selected = currentAnswers[index] === option.value;
-                    return <label key={`${option.label}-${option.value}`} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-[#2877a7] ${selected ? "border-[#2877a7] bg-sky-50 text-[#14365F] shadow-sm" : "border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-slate-50"}`}>
-                      <input type="radio" name={`${active.id}-q${index}`} value={option.value} checked={selected} onChange={() => setAnswer(index, option.value)} className="h-4 w-4 shrink-0 accent-[#1c6795]" />
+            {!complete ? <div className="mt-7">
+              {isImpactStep ? <fieldset className="rounded-2xl border border-slate-200 p-5 sm:p-7"><legend className="max-w-full px-1 text-base font-semibold leading-7 text-slate-800 sm:text-lg">How difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?</legend><div className="mt-5 grid gap-3 sm:grid-cols-2">{["Not difficult at all", "Somewhat difficult", "Very difficult", "Extremely difficult"].map((option) => <label key={option} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-[#2877a7] ${difficulty === option ? "border-[#2877a7] bg-sky-50 text-[#14365F]" : "border-slate-200 text-slate-700 hover:border-sky-300"}`}><input type="radio" name="phq9-difficulty" value={option} checked={difficulty === option} onChange={() => setDifficulty(option)} className="h-4 w-4 accent-[#1c6795]" /><span>{option}</span></label>)}</div><p className="mt-3 text-xs text-slate-500">Optional. This question is not included in the PHQ-9 score.</p></fieldset> : <fieldset key={`${active.id}-${questionIndex}`} className="rounded-2xl border border-slate-200 p-5 sm:p-7">
+                <legend className="max-w-full px-1 text-base font-semibold leading-7 text-slate-800 sm:text-lg"><span className="mr-2 inline-grid h-8 min-w-8 place-items-center rounded-full bg-[#14365F] px-2 text-xs font-bold text-white">{questionIndex + 1}</span>{active.questions[questionIndex]}</legend>
+                <div className={`mt-5 grid gap-3 ${active.id === "audit" ? "sm:grid-cols-2" : "sm:grid-cols-2"}`}>
+                  {active.options[questionIndex].map((option) => {
+                    const selected = currentAnswers[questionIndex] === option.value;
+                    return <label key={`${option.label}-${option.value}`} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-[#2877a7] ${selected ? "border-[#2877a7] bg-sky-50 text-[#14365F] shadow-sm" : "border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-slate-50"}`}>
+                      <input type="radio" name={`${active.id}-q${questionIndex}`} value={option.value} checked={selected} onChange={() => setAnswer(questionIndex, option.value)} className="h-4 w-4 shrink-0 accent-[#1c6795]" />
                       <span className="leading-5">{option.label}</span>
                     </label>;
                   })}
                 </div>
-              </fieldset>)}
-              {active.id === "phq9" && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Please take question 9 seriously.</strong> Any answer other than “Not at all” will show a reminder to seek support. If you feel in immediate danger, contact local emergency services or go to the nearest emergency department.</div>}
-              {active.id === "phq9" && <fieldset className="rounded-2xl border border-slate-200 p-4 sm:p-5"><legend className="px-1 text-sm font-semibold leading-6 text-slate-800 sm:text-base">How difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?</legend><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{["Not difficult at all", "Somewhat difficult", "Very difficult", "Extremely difficult"].map((option) => <label key={option} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-[#2877a7] ${difficulty === option ? "border-[#2877a7] bg-sky-50 text-[#14365F]" : "border-slate-200 text-slate-700 hover:border-sky-300"}`}><input type="radio" name="phq9-difficulty" value={option} checked={difficulty === option} onChange={() => setDifficulty(option)} className="h-4 w-4 accent-[#1c6795]" /><span>{option}</span></label>)}</div><p className="mt-2 text-xs text-slate-500">This additional question is not included in the PHQ-9 total score.</p></fieldset>}
+                {active.id === "phq9" && questionIndex === 8 && <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Please take this question seriously.</strong> Any answer other than “Not at all” will show a reminder to seek support. If you feel in immediate danger, contact local emergency services or go to the nearest emergency department.</div>}
+              </fieldset>}
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><button type="button" onClick={() => setQuestionIndex((index) => Math.max(0, index - 1))} disabled={questionIndex === 0} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 px-4 font-semibold text-[#14365F] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"><ArrowLeft size={16} aria-hidden="true" />Back</button>{questionIndex < stepCount - 1 ? <button type="button" onClick={() => setQuestionIndex((index) => index + 1)} disabled={!hasCurrentAnswer} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#14365F] px-5 font-semibold text-white transition hover:bg-[#1e4e7e] disabled:cursor-not-allowed disabled:opacity-45">Next<ArrowRight size={16} aria-hidden="true" /></button> : <button type="button" onClick={() => setSubmitted(true)} disabled={!hasCurrentAnswer} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#14365F] px-5 font-semibold text-white transition hover:bg-[#1e4e7e] disabled:cursor-not-allowed disabled:opacity-45"><Check size={16} aria-hidden="true" />Submit and see results</button>}</div>
             </div> : <section ref={resultRef} aria-live="polite" className={`mt-7 rounded-3xl border p-5 shadow-sm sm:p-8 ${clinicReferral ? "border-rose-300 bg-gradient-to-br from-rose-50 via-white to-red-50" : "border-slate-200 bg-gradient-to-br from-[#f5faff] via-white to-[#eff9fc]"}`}>
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
                 <div className={`grid h-32 w-32 shrink-0 place-items-center rounded-full border-[10px] bg-white shadow-inner sm:h-40 sm:w-40 ${clinicReferral ? "border-rose-200" : "border-sky-100"}`}><div className="text-center"><p className={`text-4xl font-bold tracking-tight ${clinicReferral ? "text-rose-800" : "text-[#14365F]"}`}>{score}</p><p className="text-xs font-semibold text-slate-500">out of {active.id === "gad7" ? 21 : active.id === "phq9" ? 27 : 40}</p></div></div>
