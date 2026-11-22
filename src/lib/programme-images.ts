@@ -1,13 +1,12 @@
 import type { PublicContentRecord } from "@/lib/public-content";
 
-export function getProgrammeImages(programme: PublicContentRecord): string[] {
-  const gallery = programme.gallery_images;
+export function getContentGalleryImages(item: PublicContentRecord): string[] {
+  const gallery = item.gallery_images;
+  const coverImage = typeof item.image_url === "string" ? item.image_url : "";
   if (Array.isArray(gallery)) {
     const images = gallery.filter((image): image is string => typeof image === "string" && image.length > 0);
-    if (images.length) return images;
+    if (images.length) return Array.from(new Set([coverImage, ...images].filter(Boolean)));
   }
 
-  return typeof programme.image_url === "string" && programme.image_url
-    ? [programme.image_url]
-    : [];
+  return coverImage ? [coverImage] : [];
 }

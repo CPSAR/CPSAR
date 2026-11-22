@@ -13,9 +13,9 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
   for (const field of config.fields) {
     if (!(field in input)) continue;
     const value = input[field];
-    if (field === "gallery_images" && collection === "programmes") {
+    if (field === "gallery_images" && (collection === "programmes" || collection === "events")) {
       if (!Array.isArray(value) || value.length > 24 || value.some((image) => typeof image !== "string" || image.length > 2048 || (image.startsWith("/") ? image.startsWith("//") : !/^https:\/\//i.test(image)))) {
-        return { error: "Programme gallery must contain up to 24 valid HTTPS image URLs or local paths." };
+        return { error: "The photo gallery must contain up to 24 valid HTTPS image URLs or local paths." };
       }
       output[field] = value;
       continue;
@@ -73,7 +73,7 @@ function normalizeRecord(collection: keyof typeof cmsCollections, input: Record<
 function revalidateCollection(collection: keyof typeof cmsCollections) {
   const paths: Partial<Record<keyof typeof cmsCollections, string[]>> = {
     programmes: ["/programs", "/programs/[slug]", "/"],
-    events: ["/events", "/"],
+    events: ["/events", "/events/[slug]", "/"],
     articles: ["/news", "/"],
     resources: ["/resources", "/"],
     team: ["/leadership", "/about"],

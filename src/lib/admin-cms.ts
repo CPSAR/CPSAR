@@ -8,7 +8,7 @@ export const cmsCollections = {
   events: {
     label: "Events",
     table: "events",
-    fields: ["title", "slug", "summary", "body", "category", "location", "starts_at", "ends_at", "image_url", "featured", "published"],
+    fields: ["title", "slug", "summary", "body", "category", "location", "starts_at", "ends_at", "image_url", "gallery_images", "featured", "published"],
     required: ["title", "slug"],
   },
   articles: {
