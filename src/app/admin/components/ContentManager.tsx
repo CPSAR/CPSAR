@@ -64,12 +64,21 @@ function ContentGalleryField({
 
     onBusyChange(true);
     onError("");
+    const uploaded: string[] = [];
+    const failed: string[] = [];
     try {
-      const uploaded: string[] = [];
-      for (const file of files) uploaded.push(await upload(file, "image"));
-      onChange([...images, ...uploaded]);
-    } catch (cause) {
-      onError(cause instanceof Error ? cause.message : "Could not upload the gallery photos.");
+      for (const file of files) {
+        try {
+          uploaded.push(await upload(file, "image"));
+        } catch {
+          failed.push(file.name);
+        }
+      }
+      if (uploaded.length) onChange([...images, ...uploaded]);
+      if (failed.length) {
+        const firstFailure = failed[0];
+        onError(`${uploaded.length ? `${uploaded.length} photo${uploaded.length === 1 ? "" : "s"} uploaded. ` : ""}${failed.length} photo${failed.length === 1 ? "" : "s"} failed to upload${firstFailure ? ` (starting with “${firstFailure}”)` : ""}. Check image storage settings and try again.`);
+      }
     } finally {
       onBusyChange(false);
     }
@@ -81,7 +90,7 @@ function ContentGalleryField({
       <p className="text-sm text-slate-600">Upload several photos to show a gallery on this item’s public page.</p>
       <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={busy || images.length >= 24} aria-label="Upload gallery photos" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-[#173a60]" onChange={addFiles} />
       <p className="text-xs text-slate-500">JPG, PNG, or WebP. Photos are optimized before upload. Maximum 24 photos.</p>
-      {images.length > 0 && <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{images.map((image, index) => <li key={`${image}-${index}`} className="relative overflow-hidden rounded-lg border border-slate-200"><img src={image} alt={`Programme gallery photo ${index + 1}`} className="h-32 w-full object-cover" /><button type="button" disabled={busy} onClick={() => onChange(images.filter((_, imageIndex) => imageIndex !== index))} className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-xs font-semibold text-slate-800 shadow hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#24578E]" aria-label={`Remove photo ${index + 1}`}>Remove</button></li>)}</ul>}
+      {images.length > 0 && <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{images.map((image, index) => <li key={`${image}-${index}`} className="relative overflow-hidden rounded-lg border border-slate-200"><img src={image} alt={`Gallery photo ${index + 1}`} className="h-32 w-full object-cover" /><button type="button" disabled={busy} onClick={() => onChange(images.filter((_, imageIndex) => imageIndex !== index))} className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-xs font-semibold text-slate-800 shadow hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#24578E]" aria-label={`Remove photo ${index + 1}`}>Remove</button></li>)}</ul>}
     </div>
   );
 }
